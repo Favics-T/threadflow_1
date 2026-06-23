@@ -4,13 +4,23 @@ import { NextResponse } from 'next/server'
 import { z } from 'zod'
 import { flagLowStock } from '@/lib/tools/flagLowStock'
 import { getTailorWorkload } from '@/lib/tools/get-tailor-workload'
-import { getOrderStatus } from '@/lib/tools/get-order-status'
 import { checkFabricStock } from '@/lib/tools/check-fabric-stock'
 
-export async function GET() {
-  const today = new Date().toLocaleDateString('en-GB', {
-    weekday: 'long', day: 'numeric', month: 'long', year: 'numeric',
-  })
+export async function GET(req: Request) {
+  const { searchParams } = new URL(req.url)
+  const period = searchParams.get('period') ?? 'today'
+
+  const periodLabel: Record<string, string> = {
+    today:      new Date().toLocaleDateString('en-GB', { weekday: 'long', day: 'numeric', month: 'long', year: 'numeric' }),
+    this_week:  'This Week',
+    last_month: 'Last Month',
+  }
+
+  const periodContext: Record<string, string> = {
+    today:      'Focus on what needs attention today — urgent decisions, blocked orders, available tailors.',
+    this_week:  'Summarise what happened this week — orders completed, fabric used, tailor performance patterns.',
+    last_month: 'Give a monthly overview — output, patterns, any recurring issues, and recommendations going forward.',
+  }
 
   const result = await generateText({
     model: anthropic('claude-sonnet-4-6'),
@@ -26,9 +36,10 @@ Structure your brief exactly like this:
 
 Be specific — name clients, tailors, fabrics. Be concise — this is a brief, not a report.
 The manager reads this in 60 seconds and knows exactly what to do today.`,
-    prompt: `Generate the morning brief for ${today}. 
+    prompt: `Generate the ${period} brief for ${periodLabel[period]}.
+${periodContext[period]}
 Check fabric stock levels, tailor workloads, and any blocked or at-risk orders.
-Surface the top decisions the manager needs to make today with your reasoning.`,
+Surface the top decisions the manager needs to make with your reasoning.`,
     tools: {
       flag_low_stock: tool({
         description: 'Scan fabric inventory for low stock items',
@@ -61,7 +72,7 @@ Surface the top decisions the manager needs to make today with your reasoning.`,
 
   return NextResponse.json({
     brief: result.text,
-    date: today,
+    date: periodLabel[period],
     toolsCalled,
   })
 }

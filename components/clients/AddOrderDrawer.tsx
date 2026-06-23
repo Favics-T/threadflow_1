@@ -1,180 +1,102 @@
 'use client'
 
-import { useRouter } from 'next/navigation'
 import { useRef, useState, useTransition } from 'react'
 import { createOrder } from '@/app/clients/actions'
 import type { StudioClient } from '@/app/clients/types'
 
-type AddOrderDrawerProps = {
+export function AddOrderDrawer({
+  client,
+  open,
+  onClose,
+}: {
   client: StudioClient | null
   open: boolean
   onClose: () => void
-}
-
-export function AddOrderDrawer({ client, open, onClose }: AddOrderDrawerProps) {
-  const router = useRouter()
+}) {
   const formRef = useRef<HTMLFormElement>(null)
-  const [error, setError] = useState<string | null>(null)
   const [isPending, startTransition] = useTransition()
+  const [error, setError] = useState<string | null>(null)
 
-  if (!open || !client) {
-    return null
-  }
-
-  function submit(formData: FormData) {
+  function handleSubmit(e: React.FormEvent) {
+    e.preventDefault()
     setError(null)
-
+    const formData = new FormData(formRef.current!)
     startTransition(async () => {
       const result = await createOrder(formData)
-
-      if (result?.error) {
-        setError(result.error)
-        return
-      }
-
+      if (result.error) { setError(result.error); return }
       formRef.current?.reset()
-      router.refresh()
       onClose()
     })
   }
 
-  return (
-    <div className="fixed inset-0 z-50">
-      <button
-        type="button"
-        aria-label="Close add order drawer"
-        onClick={onClose}
-        className="absolute inset-0 bg-primary/20 backdrop-blur-sm"
-      />
+  if (!open || !client) return null
 
-      <aside className="animate-slide-in-right absolute right-0 top-0 h-full w-[500px] border-l border-outline-variant bg-surface-container-lowest shadow-2xl">
-        <div className="flex items-center justify-between border-b border-outline-variant px-7 py-6">
+  return (
+    <div
+      className="fixed inset-0 z-50 flex items-center justify-end bg-black/30 backdrop-blur-sm"
+      onClick={(e) => { if (e.target === e.currentTarget) onClose() }}
+    >
+      <div className="relative h-full w-full max-w-lg bg-surface-container-lowest border-l border-outline-variant shadow-2xl flex flex-col animate-slide-in-right overflow-y-auto">
+        <div className="flex items-center justify-between px-8 py-7 border-b border-outline-variant bg-surface-container-low">
           <div>
-            <span className="text-label-caps font-label-caps uppercase tracking-widest text-on-surface-variant">
-              Production
-            </span>
-            <h2 className="mt-0.5 font-headline-md text-headline-md text-primary">
-              Add Order
-            </h2>
-            <p className="mt-1 text-body-sm font-body-sm text-on-surface-variant">
-              {client.name}
-            </p>
+            <p className="text-label-caps font-label-caps text-on-surface-variant mb-1">New Order</p>
+            <h2 className="font-headline-md text-headline-md text-primary">{client.name}</h2>
           </div>
-          <button
-            type="button"
-            onClick={onClose}
-            aria-label="Close drawer"
-            className="flex h-10 w-10 items-center justify-center bg-surface-container-low text-primary hover:bg-surface-container-high"
-          >
-            <span className="material-symbols-outlined">close</span>
+          <button onClick={onClose} className="w-9 h-9 flex items-center justify-center hover:bg-surface-container-high transition-colors">
+            <span className="material-symbols-outlined text-on-surface-variant">close</span>
           </button>
         </div>
 
-        <form ref={formRef} action={submit} className="flex h-[calc(100%-112px)] flex-col">
+        <form ref={formRef} onSubmit={handleSubmit} className="flex flex-col gap-6 px-8 py-8 flex-grow">
           <input type="hidden" name="client_id" value={client.id} />
 
-          <div className="hide-scrollbar flex-1 overflow-y-auto px-7 py-6">
-            <div className="grid gap-5">
-              <label className="grid gap-2">
-                <span className="text-label-caps font-label-caps uppercase tracking-widest text-on-surface-variant">
-                  Garment Type
-                </span>
-                <input
-                  name="garment_type"
-                  placeholder="Bias gown, agbada, bridal fitting"
-                  className="border border-outline-variant bg-surface-container-low px-4 py-3 text-body-sm font-body-sm text-primary outline-none placeholder:text-on-surface-variant/60 focus:border-primary"
-                />
-              </label>
-
-              <div className="grid grid-cols-2 gap-3">
-                <label className="grid gap-2">
-                  <span className="text-label-caps font-label-caps uppercase tracking-widest text-on-surface-variant">
-                    Status
-                  </span>
-                  <select
-                    name="status"
-                    defaultValue="pending"
-                    className="border border-outline-variant bg-surface-container-low px-4 py-3 text-body-sm font-body-sm text-primary outline-none focus:border-primary"
-                  >
-                    <option value="pending">Pending</option>
-                    <option value="in_progress">In Progress</option>
-                    <option value="blocked">Blocked</option>
-                    <option value="completed">Completed</option>
-                  </select>
-                </label>
-
-                <label className="grid gap-2">
-                  <span className="text-label-caps font-label-caps uppercase tracking-widest text-on-surface-variant">
-                    Yards
-                  </span>
-                  <input
-                    name="yards_required"
-                    inputMode="decimal"
-                    className="border border-outline-variant bg-surface-container-low px-4 py-3 text-data-mono font-data-mono text-primary outline-none focus:border-primary"
-                  />
-                </label>
-              </div>
-
-              <label className="grid gap-2">
-                <span className="text-label-caps font-label-caps uppercase tracking-widest text-on-surface-variant">
-                  Delivery Estimate
-                </span>
-                <input
-                  name="delivery_estimate"
-                  type="date"
-                  className="border border-outline-variant bg-surface-container-low px-4 py-3 text-data-mono font-data-mono text-primary outline-none focus:border-primary"
-                />
-              </label>
-
-              <label className="grid gap-2">
-                <span className="text-label-caps font-label-caps uppercase tracking-widest text-on-surface-variant">
-                  Outfit Image URL
-                </span>
-                <input
-                  name="image_url"
-                  type="url"
-                  placeholder="https://..."
-                  className="border border-outline-variant bg-surface-container-low px-4 py-3 text-body-sm font-body-sm text-primary outline-none placeholder:text-on-surface-variant/60 focus:border-primary"
-                />
-              </label>
-
-              <label className="grid gap-2">
-                <span className="text-label-caps font-label-caps uppercase tracking-widest text-on-surface-variant">
-                  Notes
-                </span>
-                <textarea
-                  name="notes"
-                  rows={6}
-                  className="resize-none border border-outline-variant bg-surface-container-low px-4 py-3 text-body-sm font-body-sm text-primary outline-none focus:border-primary"
-                />
-              </label>
+          {error && (
+            <div className="px-4 py-3 bg-error-container text-on-error-container text-body-sm font-body-sm">
+              {error}
             </div>
+          )}
 
-            {error ? (
-              <p className="mt-5 border border-error bg-error-container px-4 py-3 text-body-sm font-body-sm text-on-error-container">
-                {error}
-              </p>
-            ) : null}
+          {[
+            { name: 'garment_type',      label: 'Garment Type',      type: 'text',   placeholder: 'e.g. Ankara Evening Gown' },
+            { name: 'yards_required',    label: 'Fabric Required (yds)', type: 'number', placeholder: '6' },
+            { name: 'delivery_estimate', label: 'Target Delivery',   type: 'date',   placeholder: '' },
+            { name: 'image_url',         label: 'Outfit Image URL',  type: 'url',    placeholder: 'https://...' },
+          ].map((field) => (
+            <div key={field.name}>
+              <label className="block text-label-caps font-label-caps text-on-surface-variant mb-2 uppercase">
+                {field.label}
+              </label>
+              <input
+                name={field.name}
+                type={field.type}
+                placeholder={field.placeholder}
+                className="w-full bg-transparent border-b border-outline-variant focus:border-primary outline-none py-2 text-body-lg font-body-lg text-on-surface placeholder:text-outline-variant transition-colors"
+              />
+            </div>
+          ))}
+
+          <div>
+            <label className="block text-label-caps font-label-caps text-on-surface-variant mb-2 uppercase">
+              Notes
+            </label>
+            <textarea
+              name="notes"
+              rows={3}
+              placeholder="Fitting notes, client preferences, special instructions…"
+              className="w-full bg-transparent border-b border-outline-variant focus:border-primary outline-none py-2 text-body-lg font-body-lg text-on-surface placeholder:text-outline-variant transition-colors resize-none"
+            />
           </div>
 
-          <div className="grid grid-cols-2 gap-3 border-t border-outline-variant px-7 py-5">
-            <button
-              type="button"
-              onClick={onClose}
-              className="bg-surface-container-low px-5 py-3 text-label-caps font-label-caps uppercase tracking-widest text-primary hover:bg-surface-container-high"
-            >
+          <div className="mt-auto pt-4 flex gap-3">
+            <button type="button" onClick={onClose} className="flex-1 py-3 border border-outline-variant text-on-surface-variant text-label-caps font-label-caps hover:bg-surface-container transition-colors">
               Cancel
             </button>
-            <button
-              type="submit"
-              disabled={isPending}
-              className="bg-primary px-5 py-3 text-label-caps font-label-caps uppercase tracking-widest text-on-primary disabled:opacity-50"
-            >
-              {isPending ? 'Saving' : 'Create'}
+            <button type="submit" disabled={isPending} className="flex-1 py-3 bg-primary text-on-primary text-label-caps font-label-caps hover:opacity-90 transition-opacity disabled:opacity-50">
+              {isPending ? 'Creating…' : 'Create Order'}
             </button>
           </div>
         </form>
-      </aside>
+      </div>
     </div>
   )
 }

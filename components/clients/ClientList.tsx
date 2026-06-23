@@ -1,92 +1,71 @@
 import type { StudioClient } from '@/app/clients/types'
 
-function initials(name: string) {
-  return name
-    .split(' ')
-    .filter(Boolean)
-    .slice(0, 2)
-    .map((part) => part[0]?.toUpperCase())
-    .join('')
-}
-
-type ClientListProps = {
+type Props = {
   clients: StudioClient[]
   selectedClientId: string
-  onSelectClient: (clientId: string) => void
+  onSelectClient: (id: string) => void
   onAddClient: () => void
 }
 
-export function ClientList({
-  clients,
-  selectedClientId,
-  onSelectClient,
-  onAddClient,
-}: ClientListProps) {
+export function ClientList({ clients, selectedClientId, onSelectClient }: Props) {
   return (
-    <aside className="border-r border-outline-variant bg-surface-container-low">
-      <div className="flex items-center justify-between border-b border-outline-variant px-6 py-6">
-        <div>
-          <span className="text-label-caps font-label-caps uppercase tracking-widest text-on-surface-variant">
-            Directory
-          </span>
-          <h2 className="mt-0.5 font-headline-md text-headline-md text-primary">
-            Studio Clients
-          </h2>
-        </div>
-        <button
-          type="button"
-          onClick={onAddClient}
-          aria-label="Add client"
-          className="flex h-10 w-10 items-center justify-center bg-primary text-on-primary transition-opacity hover:opacity-90"
-        >
-          <span className="material-symbols-outlined">add</span>
-        </button>
+    <aside className="border-r border-outline-variant flex flex-col h-full">
+      <div className="px-6 py-5 border-b border-outline-variant">
+        <p className="text-label-caps font-label-caps text-on-surface-variant uppercase tracking-widest mb-0.5">
+          Directory
+        </p>
+        <h2 className="font-headline-md text-headline-md text-primary">
+          {clients.length} Clients
+        </h2>
       </div>
 
-      {clients.length === 0 ? (
-        <div className="flex h-[520px] flex-col items-center justify-center px-8 text-center">
-          <span className="material-symbols-outlined text-4xl text-on-surface-variant">
-            group
-          </span>
-          <p className="mt-3 text-body-sm font-body-sm text-on-surface-variant">
-            No clients in the studio directory yet.
-          </p>
-        </div>
-      ) : (
-        <div className="hide-scrollbar max-h-[680px] overflow-y-auto divide-y divide-outline-variant/30">
-          {clients.map((client) => {
-            const selected = client.id === selectedClientId
+      <div className="flex-1 overflow-y-auto divide-y divide-outline-variant/30">
+        {clients.length === 0 ? (
+          <div className="flex flex-col items-center justify-center h-full gap-3 py-16 text-center px-6">
+            <span className="material-symbols-outlined text-4xl text-outline-variant">person_off</span>
+            <p className="text-body-sm font-body-sm text-on-surface-variant">
+              No clients yet. Add your first client to get started.
+            </p>
+          </div>
+        ) : (
+          clients.map((client) => {
+            const isSelected = client.id === selectedClientId
+            const initials = client.name
+              .split(' ')
+              .map((n) => n[0])
+              .join('')
+              .slice(0, 2)
+              .toUpperCase()
 
             return (
               <button
                 key={client.id}
-                type="button"
                 onClick={() => onSelectClient(client.id)}
-                className={`grid w-full grid-cols-[40px_minmax(0,1fr)_auto] items-center gap-3 px-5 py-4 text-left transition-colors ${
-                  selected
-                    ? 'border-l-2 border-primary bg-surface-container-high'
-                    : 'border-l-2 border-transparent hover:bg-surface-container-high'
+                className={`w-full text-left flex items-center gap-4 px-6 py-4 transition-all duration-200 ${
+                  isSelected
+                    ? 'bg-surface-container-high border-r-2 border-primary'
+                    : 'hover:bg-surface-container-low'
                 }`}
               >
-                <span className="flex h-10 w-10 items-center justify-center bg-surface-container-lowest text-label-caps font-label-caps text-primary">
-                  {initials(client.name)}
-                </span>
-                <span className="min-w-0">
-                  <span className="block truncate text-body-sm font-body-sm font-semibold text-primary">
+                <div className="w-9 h-9 bg-surface-container flex items-center justify-center flex-shrink-0">
+                  <span className="text-label-caps font-label-caps text-primary">{initials}</span>
+                </div>
+                <div className="flex-1 min-w-0">
+                  <p className="text-body-sm font-body-sm font-semibold text-primary truncate">
                     {client.name}
-                  </span>
-                  <span className="block truncate text-body-sm font-body-sm text-on-surface-variant">
-                    {client.phone ?? 'No phone recorded'}
-                  </span>
-                </span>
-                <span className="bg-surface-container-lowest px-2 py-1 text-data-mono font-data-mono text-on-surface-variant">
+                  </p>
+                  <p className="text-label-caps font-label-caps text-on-surface-variant mt-0.5">
+                    {client.phone ?? 'No phone'}
+                  </p>
+                </div>
+                <span className="text-label-caps font-label-caps text-on-surface-variant bg-surface-container px-2 py-0.5 flex-shrink-0">
                   {client.orders.length}
                 </span>
               </button>
             )
-          })}
-        </div>
-      )}
+          })
+        )}
+      </div>
     </aside>
   )
 }

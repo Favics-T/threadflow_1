@@ -1,137 +1,155 @@
+'use client'
+
+import { useState } from 'react'
+import type { StudioClient } from '@/app/clients/types'
 import { MeasurementsEditor } from './MeasurementsEditor'
 import { OrderCard } from './OrderCard'
-import type { StudioClient } from '@/app/clients/types'
 
-function formatDate(value: string | null) {
-  if (!value) {
-    return 'Not recorded'
-  }
-
-  return new Intl.DateTimeFormat('en-GB', {
-    day: '2-digit',
-    month: 'short',
-    year: 'numeric',
-  }).format(new Date(value))
-}
-
-type ClientDetailProps = {
+type Props = {
   client: StudioClient | null
   onAddOrder: () => void
 }
 
-export function ClientDetail({ client, onAddOrder }: ClientDetailProps) {
+export function ClientDetail({ client, onAddOrder }: Props) {
+  const [activeTab, setActiveTab] = useState<'overview' | 'measurements' | 'orders'>('overview')
+
   if (!client) {
     return (
-      <section className="flex min-h-[680px] flex-col items-center justify-center px-8 text-center">
-        <span className="material-symbols-outlined text-5xl text-on-surface-variant">
-          person_search
-        </span>
-        <p className="mt-3 text-body-sm font-body-sm text-on-surface-variant">
-          Select or add a client to begin.
+      <div className="flex flex-col items-center justify-center h-full gap-3 text-center px-10">
+        <span className="material-symbols-outlined text-4xl text-outline-variant">person</span>
+        <p className="text-body-sm font-body-sm text-on-surface-variant">
+          Select a client to view their profile.
         </p>
-      </section>
+      </div>
     )
   }
 
+  const initials = client.name
+    .split(' ')
+    .map((n) => n[0])
+    .join('')
+    .slice(0, 2)
+    .toUpperCase()
+
+  const joinedDate = client.created_at
+    ? new Date(client.created_at).toLocaleDateString('en-GB', {
+        day: 'numeric', month: 'long', year: 'numeric',
+      })
+    : '—'
+
+  const tabs = [
+    { id: 'overview',     label: 'Overview'     },
+    { id: 'measurements', label: 'Measurements' },
+    { id: 'orders',       label: `Orders (${client.orders.length})` },
+  ] as const
+
   return (
-    <section className="min-w-0 bg-surface-container-lowest">
-      <div className="flex items-center justify-between border-b border-outline-variant px-8 py-6">
-        <div>
-          <span className="text-label-caps font-label-caps uppercase tracking-widest text-on-surface-variant">
-            Client File
-          </span>
-          <h2 className="mt-0.5 font-headline-md text-headline-md text-primary">
-            {client.name}
-          </h2>
+    <div className="flex flex-col h-full overflow-y-auto">
+
+      {/* Client header */}
+      <div className="flex items-center justify-between px-8 py-6 border-b border-outline-variant bg-surface-container-low">
+        <div className="flex items-center gap-4">
+          <div className="w-12 h-12 bg-surface-container-highest flex items-center justify-center flex-shrink-0">
+            <span className="font-headline-md text-headline-md text-primary">{initials}</span>
+          </div>
+          <div>
+            <h2 className="font-headline-md text-headline-md text-primary">{client.name}</h2>
+            <p className="text-body-sm font-body-sm text-on-surface-variant mt-0.5">
+              {client.phone ?? 'No phone'} · Joined {joinedDate}
+            </p>
+          </div>
         </div>
         <button
-          type="button"
           onClick={onAddOrder}
-          className="flex items-center gap-2 bg-primary px-6 py-3 text-label-caps font-label-caps uppercase tracking-widest text-on-primary transition-opacity hover:opacity-90"
+          className="flex items-center gap-2 bg-primary text-on-primary px-6 py-2.5 text-label-caps font-label-caps tracking-widest hover:opacity-90 transition-opacity"
         >
-          <span className="material-symbols-outlined text-lg">add_shopping_cart</span>
-          Add Order
+          <span className="material-symbols-outlined text-sm">add</span>
+          NEW ORDER
         </button>
       </div>
 
-      <div className="grid grid-cols-1 divide-y divide-outline-variant/30">
-        <section className="px-8 py-7">
-          <span className="text-label-caps font-label-caps uppercase tracking-widest text-on-surface-variant">
-            Profile
-          </span>
-          <h3 className="mt-0.5 font-headline-md text-headline-md text-primary">
-            Contact Record
-          </h3>
+      {/* Tabs */}
+      <div className="flex border-b border-outline-variant px-8">
+        {tabs.map((tab) => (
+          <button
+            key={tab.id}
+            onClick={() => setActiveTab(tab.id)}
+            className={`py-3 px-4 text-label-caps font-label-caps tracking-widest transition-colors border-b-2 -mb-px ${
+              activeTab === tab.id
+                ? 'text-primary border-primary'
+                : 'text-on-surface-variant border-transparent hover:text-primary'
+            }`}
+          >
+            {tab.label}
+          </button>
+        ))}
+      </div>
 
-          <dl className="mt-5 grid grid-cols-3 divide-x divide-outline-variant/30 border border-outline-variant">
-            <div className="px-5 py-4">
-              <dt className="text-label-caps font-label-caps uppercase tracking-widest text-on-surface-variant">
-                Name
-              </dt>
-              <dd className="mt-2 text-body-sm font-body-sm text-primary">{client.name}</dd>
-            </div>
-            <div className="px-5 py-4">
-              <dt className="text-label-caps font-label-caps uppercase tracking-widest text-on-surface-variant">
-                Phone
-              </dt>
-              <dd className="mt-2 text-body-sm font-body-sm text-primary">
-                {client.phone ?? 'Not recorded'}
-              </dd>
-            </div>
-            <div className="px-5 py-4">
-              <dt className="text-label-caps font-label-caps uppercase tracking-widest text-on-surface-variant">
-                Created
-              </dt>
-              <dd className="mt-2 text-data-mono font-data-mono text-primary">
-                {formatDate(client.created_at)}
-              </dd>
-            </div>
-          </dl>
-        </section>
+      {/* Tab content */}
+      <div className="flex-1 px-8 py-6">
 
-        <section className="px-8 py-7">
-          <span className="text-label-caps font-label-caps uppercase tracking-widest text-on-surface-variant">
-            Measurements
-          </span>
-          <h3 className="mt-0.5 font-headline-md text-headline-md text-primary">
-            Fit Profile
-          </h3>
-          <MeasurementsEditor clientId={client.id} measurements={client.measurements ?? {}} />
-        </section>
-
-        <section className="px-8 py-7">
-          <div className="mb-5 flex items-end justify-between">
-            <div>
-              <span className="text-label-caps font-label-caps uppercase tracking-widest text-on-surface-variant">
-                Order History
-              </span>
-              <h3 className="mt-0.5 font-headline-md text-headline-md text-primary">
-                Garments In Motion
-              </h3>
-            </div>
-            <span className="text-data-mono font-data-mono text-on-surface-variant">
-              {client.orders.length} ORDERS
-            </span>
-          </div>
-
-          {client.orders.length === 0 ? (
-            <div className="flex min-h-56 flex-col items-center justify-center border border-outline-variant bg-surface-container-low px-8 text-center">
-              <span className="material-symbols-outlined text-4xl text-on-surface-variant">
-                apparel
-              </span>
-              <p className="mt-3 text-body-sm font-body-sm text-on-surface-variant">
-                No orders recorded for this client.
-              </p>
-            </div>
-          ) : (
-            <div className="divide-y divide-outline-variant/30 border border-outline-variant">
-              {client.orders.map((order) => (
-                <OrderCard key={order.id} order={order} />
+        {/* Overview */}
+        {activeTab === 'overview' && (
+          <div className="flex flex-col gap-6">
+            <div className="grid grid-cols-3 gap-4">
+              {[
+                { label: 'Total Orders',     value: client.orders.length },
+                { label: 'In Progress',      value: client.orders.filter((o) => o.status === 'in_progress').length },
+                { label: 'Completed',        value: client.orders.filter((o) => o.status === 'completed').length },
+              ].map((stat) => (
+                <div key={stat.label} className="border border-outline-variant bg-surface-container-lowest p-5">
+                  <p className="text-label-caps font-label-caps text-on-surface-variant uppercase tracking-widest mb-2">
+                    {stat.label}
+                  </p>
+                  <p className="font-headline-md text-headline-md text-primary">{stat.value}</p>
+                </div>
               ))}
             </div>
-          )}
-        </section>
+
+            {client.orders.length > 0 && (
+              <div>
+                <p className="text-label-caps font-label-caps text-on-surface-variant uppercase tracking-widest mb-4">
+                  Recent Orders
+                </p>
+                <div className="flex flex-col gap-3">
+                  {client.orders.slice(0, 3).map((order) => (
+                    <OrderCard key={order.id} order={order} />
+                  ))}
+                </div>
+              </div>
+            )}
+          </div>
+        )}
+
+        {/* Measurements */}
+        {activeTab === 'measurements' && (
+          <MeasurementsEditor client={client} />
+        )}
+
+        {/* Orders */}
+        {activeTab === 'orders' && (
+          <div className="flex flex-col gap-3">
+            {client.orders.length === 0 ? (
+              <div className="flex flex-col items-center justify-center py-16 gap-3 text-center">
+                <span className="material-symbols-outlined text-4xl text-outline-variant">receipt_long</span>
+                <p className="text-body-sm font-body-sm text-on-surface-variant">
+                  No orders yet for this client.
+                </p>
+                <button
+                  onClick={onAddOrder}
+                  className="mt-2 text-label-caps font-label-caps text-primary underline underline-offset-4"
+                >
+                  Create first order
+                </button>
+              </div>
+            ) : (
+              client.orders.map((order) => (
+                <OrderCard key={order.id} order={order} />
+              ))
+            )}
+          </div>
+        )}
       </div>
-    </section>
+    </div>
   )
 }

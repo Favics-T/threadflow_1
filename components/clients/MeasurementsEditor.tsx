@@ -1,114 +1,120 @@
 'use client'
 
-import { useRouter } from 'next/navigation'
-import { useMemo, useState, useTransition } from 'react'
+import { useState, useTransition } from 'react'
 import { updateMeasurements } from '@/app/clients/actions'
-import type { MeasurementMap, MeasurementValue } from '@/app/clients/types'
+import type { MeasurementMap, StudioClient } from '@/app/clients/types'
 
-const defaultMeasurements = ['bust', 'waist', 'hip', 'shoulder', 'sleeve', 'inseam']
+const MEASUREMENT_FIELDS = [
+  { key: 'bust',              label: 'Bust' },
+  { key: 'underbust',         label: 'Underbust' },
+  { key: 'waist',             label: 'Waist' },
+  { key: 'hips',              label: 'Hips' },
+  { key: 'inseam',            label: 'Inseam' },
+  { key: 'shoulder_to_waist', label: 'Shoulder → Waist' },
+  { key: 'arm_length',        label: 'Arm Length' },
+  { key: 'neck',              label: 'Neck' },
+]
 
-function displayValue(value: MeasurementValue) {
-  if (value === null || value === undefined || value === '') {
-    return '—'
-  }
-
-  return String(value)
-}
-
-function parseValue(value: string): MeasurementValue {
-  const trimmed = value.trim()
-
-  if (!trimmed) {
-    return null
-  }
-
-  const number = Number(trimmed)
-  return Number.isFinite(number) ? number : trimmed
-}
-
-type MeasurementsEditorProps = {
-  clientId: string
-  measurements: MeasurementMap
-}
-
-export function MeasurementsEditor({
-  clientId,
-  measurements,
-}: MeasurementsEditorProps) {
-  const router = useRouter()
-  const [localMeasurements, setLocalMeasurements] = useState(measurements)
-  const [editingKey, setEditingKey] = useState<string | null>(null)
-  const [draftValue, setDraftValue] = useState('')
+export function MeasurementsEditor({ client }: { client: StudioClient }) {
+  const [editing, setEditing] = useState(false)
   const [isPending, startTransition] = useTransition()
+  const [error, setError] = useState<string | null>(null)
+  const [draft, setDraft] = useState<Record<string, string>>(() =>
+    Object.fromEntries(
+      MEASUREMENT_FIELDS.map((f) => [
+        f.key,
+        String(client.measurements?.[f.key] ?? ''),
+      ])
+    )
+  )
 
-  const keys = useMemo(() => {
-    const merged = new Set([...defaultMeasurements, ...Object.keys(localMeasurements)])
-    return Array.from(merged)
-  }, [localMeasurements])
-
-  function startEditing(key: string) {
-    setEditingKey(key)
-    setDraftValue(displayValue(localMeasurements[key]) === '—' ? '' : displayValue(localMeasurements[key]))
-  }
-
-  function saveMeasurement(key: string) {
-    const next = {
-      ...localMeasurements,
-      [key]: parseValue(draftValue),
+  function handleSave() {
+    setError(null)
+    const updated: MeasurementMap = {}
+    for (const { key } of MEASUREMENT_FIELDS) {
+      const val = draft[key].trim()
+      if (!val) continue
+      const n = parseFloat(val)
+      if (isNaN(n)) { setError(`Invalid value for ${key}`); return }
+      updated[key] = n
     }
-
-    setLocalMeasurements(next)
-    setEditingKey(null)
-
     startTransition(async () => {
-      await updateMeasurements(clientId, next)
-      router.refresh()
+      const result = await updateMeasurements(client.id, updated)
+      if (result.error) { setError(result.error); return }
+      setEditing(false)
     })
   }
 
   return (
-    <div className="mt-5 grid grid-cols-2 border border-outline-variant md:grid-cols-3">
-      {keys.map((key) => (
-        <div
-          key={key}
-          className="min-h-24 border-b border-r border-outline-variant/30 px-5 py-4 last:border-r-0"
-        >
-          <p className="text-label-caps font-label-caps uppercase tracking-widest text-on-surface-variant">
-            {key.replaceAll('_', ' ')}
+    <div>
+      <div className="flex items-center justify-between mb-6">
+        <div>
+          <p className="text-label-caps font-label-caps text-on-surface-variant uppercase tracking-widest">
+            Body Measurements (cm)
           </p>
-
-          {editingKey === key ? (
-            <form
-              action={() => saveMeasurement(key)}
-              className="mt-3 flex items-center gap-2"
-            >
-              <input
-                autoFocus
-                value={draftValue}
-                onChange={(event) => setDraftValue(event.target.value)}
-                onBlur={() => saveMeasurement(key)}
-                className="min-w-0 flex-1 border-b border-primary bg-transparent py-1 text-data-mono font-data-mono text-primary outline-none"
-              />
-              <button
-                type="submit"
-                disabled={isPending}
-                aria-label="Save measurement"
-                className="flex h-8 w-8 items-center justify-center bg-primary text-on-primary disabled:opacity-50"
-              >
-                <span className="material-symbols-outlined text-base">check</span>
-              </button>
-            </form>
-          ) : (
-            <button
-              type="button"
-              onClick={() => startEditing(key)}
-              className="mt-3 block w-full text-left text-data-mono font-data-mono text-primary hover:text-on-surface-variant"
-            >
-              {displayValue(localMeasurements[key])}
-            </button>
-          )}
         </div>
-      ))}
+        {editing ? (
+          <div className="flex gap-2">
+            <button
+              onClick={() => setEditing(false)}
+              className="px-4 py-1.5 border border-outline-variant text-label-caps font-label-caps text-on-surface-variant hover:bg-surface-container transition-colors"
+            >
+              Cancel
+            </button>
+            <button
+              onClick={handleSave}
+              disabled={isPending}
+              className="px-4 py-1.5 bg-primary text-on-primary text-label-caps font-label-caps hover:opacity-90 transition-opacity disabled:opacity-50"
+            >
+              {isPending ? 'Saving…' : 'Save'}
+            </button>
+          </div>
+        ) : (
+          <button
+            onClick={() => setEditing(true)}
+            className="flex items-center gap-1.5 px-4 py-1.5 border border-outline-variant text-label-caps font-label-caps text-on-surface-variant hover:bg-surface-container hover:border-primary hover:text-primary transition-all"
+          >
+            <span className="material-symbols-outlined text-sm">edit</span>
+            Edit
+          </button>
+        )}
+      </div>
+
+      {error && (
+        <div className="mb-4 px-4 py-3 bg-error-container text-on-error-container text-body-sm font-body-sm">
+          {error}
+        </div>
+      )}
+
+      <div className="grid grid-cols-2 md:grid-cols-4 gap-x-10 gap-y-8">
+        {MEASUREMENT_FIELDS.map(({ key, label }) => (
+          <div
+            key={key}
+            className={`pb-2 border-b transition-colors ${editing ? 'border-primary/40' : 'border-outline-variant'}`}
+          >
+            <label className="block text-label-caps font-label-caps text-on-surface-variant mb-3 uppercase">
+              {label}
+            </label>
+            {editing ? (
+              <input
+                type="number"
+                step="0.1"
+                min="0"
+                value={draft[key]}
+                onChange={(e) => setDraft((p) => ({ ...p, [key]: e.target.value }))}
+                className="w-full bg-transparent outline-none font-data-mono text-headline-md text-primary placeholder:text-outline-variant"
+                placeholder="—"
+              />
+            ) : (
+              <span className="font-data-mono text-headline-md text-primary">
+                {client.measurements?.[key] ?? (
+                  <span className="text-outline-variant text-body-lg">—</span>
+                )}
+              </span>
+            )}
+          </div>
+        ))}
+      </div>
     </div>
   )
 }

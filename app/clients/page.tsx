@@ -1,5 +1,3 @@
-import Sidebar from '@/components/layout/Sidebar'
-import Topbar from '@/components/layout/Topbar'
 import { createClient } from '@/lib/supabase/server'
 import { ClientsUI } from './ClientsUI'
 import type { ClientOrder, StudioClient } from './types'
@@ -60,13 +58,5 @@ export default async function ClientsPage() {
     })),
   }))
 
-  return (
-    <div className="min-h-screen bg-background">
-      <Topbar />
-      <Sidebar />
-      <main className="ml-64 pt-20">
-        <ClientsUI clients={clients} error={error?.message ?? null} />
-      </main>
-    </div>
-  )
+  return <ClientsUI clients={clients} error={error?.message ?? null} />
 }

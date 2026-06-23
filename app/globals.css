@@ -130,6 +130,19 @@
     line-height: 1.4;
     font-weight: 500;
   }
+
+  .animate-slide-in-right {
+    animation: slide-in-right 220ms ease-out both;
+  }
+}
+
+@keyframes slide-in-right {
+  from {
+    transform: translateX(100%);
+  }
+  to {
+    transform: translateX(0);
+  }
 }
 
 /* ── Base ── */

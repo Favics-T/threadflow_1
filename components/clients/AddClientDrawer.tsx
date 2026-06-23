@@ -1,142 +1,101 @@
 'use client'
 
-import { useRouter } from 'next/navigation'
 import { useRef, useState, useTransition } from 'react'
 import { addClient } from '@/app/clients/actions'
 
-const starterMeasurements = ['bust', 'waist', 'hip', 'shoulder']
-
-type AddClientDrawerProps = {
-  open: boolean
-  onClose: () => void
-}
-
-export function AddClientDrawer({ open, onClose }: AddClientDrawerProps) {
-  const router = useRouter()
+export function AddClientDrawer({ open, onClose }: { open: boolean; onClose: () => void }) {
   const formRef = useRef<HTMLFormElement>(null)
-  const [error, setError] = useState<string | null>(null)
   const [isPending, startTransition] = useTransition()
+  const [error, setError] = useState<string | null>(null)
 
-  if (!open) {
-    return null
-  }
-
-  function submit(formData: FormData) {
+  function handleSubmit(e: React.FormEvent) {
+    e.preventDefault()
     setError(null)
-
+    const formData = new FormData(formRef.current!)
     startTransition(async () => {
       const result = await addClient(formData)
-
-      if (result?.error) {
-        setError(result.error)
-        return
-      }
-
+      if (result.error) { setError(result.error); return }
       formRef.current?.reset()
-      router.refresh()
       onClose()
     })
   }
 
-  return (
-    <div className="fixed inset-0 z-50">
-      <button
-        type="button"
-        aria-label="Close add client drawer"
-        onClick={onClose}
-        className="absolute inset-0 bg-primary/20 backdrop-blur-sm"
-      />
+  if (!open) return null
 
-      <aside className="animate-slide-in-right absolute right-0 top-0 h-full w-[460px] border-l border-outline-variant bg-surface-container-lowest shadow-2xl">
-        <div className="flex items-center justify-between border-b border-outline-variant px-7 py-6">
+  return (
+    <div
+      className="fixed inset-0 z-50 flex items-center justify-end bg-black/30 backdrop-blur-sm"
+      onClick={(e) => { if (e.target === e.currentTarget) onClose() }}
+    >
+      <div className="relative h-full w-full max-w-lg bg-surface-container-lowest border-l border-outline-variant shadow-2xl flex flex-col animate-slide-in-right overflow-y-auto">
+        <div className="flex items-center justify-between px-8 py-7 border-b border-outline-variant bg-surface-container-low">
           <div>
-            <span className="text-label-caps font-label-caps uppercase tracking-widest text-on-surface-variant">
-              New Record
-            </span>
-            <h2 className="mt-0.5 font-headline-md text-headline-md text-primary">
-              Add Client
-            </h2>
+            <p className="text-label-caps font-label-caps text-on-surface-variant mb-1">New Client</p>
+            <h2 className="font-headline-md text-headline-md text-primary">Add Client Profile</h2>
           </div>
-          <button
-            type="button"
-            onClick={onClose}
-            aria-label="Close drawer"
-            className="flex h-10 w-10 items-center justify-center bg-surface-container-low text-primary hover:bg-surface-container-high"
-          >
-            <span className="material-symbols-outlined">close</span>
+          <button onClick={onClose} className="w-9 h-9 flex items-center justify-center hover:bg-surface-container-high transition-colors">
+            <span className="material-symbols-outlined text-on-surface-variant">close</span>
           </button>
         </div>
 
-        <form ref={formRef} action={submit} className="flex h-[calc(100%-89px)] flex-col">
-          <div className="hide-scrollbar flex-1 overflow-y-auto px-7 py-6">
-            <div className="grid gap-5">
-              <label className="grid gap-2">
-                <span className="text-label-caps font-label-caps uppercase tracking-widest text-on-surface-variant">
-                  Name
-                </span>
-                <input
-                  name="name"
-                  required
-                  className="border border-outline-variant bg-surface-container-low px-4 py-3 text-body-sm font-body-sm text-primary outline-none focus:border-primary"
-                />
-              </label>
-
-              <label className="grid gap-2">
-                <span className="text-label-caps font-label-caps uppercase tracking-widest text-on-surface-variant">
-                  Phone
-                </span>
-                <input
-                  name="phone"
-                  className="border border-outline-variant bg-surface-container-low px-4 py-3 text-body-sm font-body-sm text-primary outline-none focus:border-primary"
-                />
-              </label>
-
-              <div>
-                <span className="text-label-caps font-label-caps uppercase tracking-widest text-on-surface-variant">
-                  Measurements
-                </span>
-                <div className="mt-3 grid grid-cols-2 gap-3">
-                  {starterMeasurements.map((measurement) => (
-                    <label key={measurement} className="grid gap-2">
-                      <span className="text-label-caps font-label-caps uppercase tracking-widest text-on-surface-variant">
-                        {measurement}
-                      </span>
-                      <input
-                        name={`measurement_${measurement}`}
-                        inputMode="decimal"
-                        className="border border-outline-variant bg-surface-container-low px-4 py-3 text-data-mono font-data-mono text-primary outline-none focus:border-primary"
-                      />
-                    </label>
-                  ))}
-                </div>
-              </div>
+        <form ref={formRef} onSubmit={handleSubmit} className="flex flex-col gap-6 px-8 py-8 flex-grow">
+          {error && (
+            <div className="px-4 py-3 bg-error-container text-on-error-container text-body-sm font-body-sm">
+              {error}
             </div>
+          )}
 
-            {error ? (
-              <p className="mt-5 border border-error bg-error-container px-4 py-3 text-body-sm font-body-sm text-on-error-container">
-                {error}
-              </p>
-            ) : null}
+          {[
+            { name: 'name',  label: 'Full Name *', type: 'text',  required: true,  placeholder: 'e.g. Adaeze Okonkwo' },
+            { name: 'phone', label: 'Phone',       type: 'tel',   required: false, placeholder: '+234 801 234 5678'  },
+          ].map((field) => (
+            <div key={field.name}>
+              <label className="block text-label-caps font-label-caps text-on-surface-variant mb-2 uppercase">
+                {field.label}
+              </label>
+              <input
+                name={field.name}
+                type={field.type}
+                required={field.required}
+                placeholder={field.placeholder}
+                className="w-full bg-transparent border-b border-outline-variant focus:border-primary outline-none py-2 text-body-lg font-body-lg text-on-surface placeholder:text-outline-variant transition-colors"
+              />
+            </div>
+          ))}
+
+          <div>
+            <p className="text-label-caps font-label-caps text-on-surface-variant uppercase tracking-widest mb-4">
+              Initial Measurements (cm)
+            </p>
+            <div className="grid grid-cols-2 gap-x-6 gap-y-5">
+              {['bust', 'waist', 'hips', 'inseam'].map((key) => (
+                <div key={key} className="border-b border-outline-variant focus-within:border-primary pb-2 transition-colors">
+                  <label className="block text-label-caps font-label-caps text-on-surface-variant mb-2 uppercase text-[10px]">
+                    {key}
+                  </label>
+                  <input
+                    name={`measurement_${key}`}
+                    type="number"
+                    step="0.1"
+                    min="0"
+                    placeholder="—"
+                    className="w-full bg-transparent outline-none font-data-mono text-body-lg text-primary placeholder:text-outline-variant"
+                  />
+                </div>
+              ))}
+            </div>
           </div>
 
-          <div className="grid grid-cols-2 gap-3 border-t border-outline-variant px-7 py-5">
-            <button
-              type="button"
-              onClick={onClose}
-              className="bg-surface-container-low px-5 py-3 text-label-caps font-label-caps uppercase tracking-widest text-primary hover:bg-surface-container-high"
-            >
+          <div className="mt-auto pt-4 flex gap-3">
+            <button type="button" onClick={onClose} className="flex-1 py-3 border border-outline-variant text-on-surface-variant text-label-caps font-label-caps hover:bg-surface-container transition-colors">
               Cancel
             </button>
-            <button
-              type="submit"
-              disabled={isPending}
-              className="bg-primary px-5 py-3 text-label-caps font-label-caps uppercase tracking-widest text-on-primary disabled:opacity-50"
-            >
-              {isPending ? 'Saving' : 'Create'}
+            <button type="submit" disabled={isPending} className="flex-1 py-3 bg-primary text-on-primary text-label-caps font-label-caps hover:opacity-90 transition-opacity disabled:opacity-50">
+              {isPending ? 'Adding…' : 'Add Client'}
             </button>
           </div>
         </form>
-      </aside>
+      </div>
     </div>
   )
 }
