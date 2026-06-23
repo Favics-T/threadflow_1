@@ -124,7 +124,7 @@ export default function DashboardPage() {
 
       <MorningBriefWidget />
 
-      
+
 
       {/* Stat cards */}
       <section className="grid grid-cols-2 md:grid-cols-4 gap-4 mb-12">
@@ -199,7 +199,7 @@ export default function DashboardPage() {
                   {/* Tailor */}
                   <td className="px-6 py-5">
                     <div className="flex items-center gap-2 text-body-sm font-body-sm text-on-surface-variant">
-                      <span className={`w-2 h-2 rounded-full flex-shrink-0 ${loadDot[o.load]}`} />
+                      <span className={`w-2 h-2 rounded-full shrink-0 ${loadDot[o.load]}`} />
                       {o.tailor}
                     </div>
                   </td>
