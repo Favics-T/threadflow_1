@@ -1,6 +1,7 @@
 import Link from "next/link";
 import { ApprovalGate } from "@/components/dashboard/ApprovalGate";
 import {Sparkle,ConciergeBell,CirclePile,Shirt,MessageSquareDot,ArrowRight,GlobeCheck  } from 'lucide-react'
+import { MorningBriefWidget } from '@/components/dashboard/MorningBriefWidget'
 
 // ── Stat card 
 function StatCard({
@@ -120,6 +121,8 @@ export default function DashboardPage() {
           ASK AI AGENT
         </Link>
       </header>
+
+      <MorningBriefWidget />
 
       {/* Stat cards */}
       <section className="grid grid-cols-2 md:grid-cols-4 gap-4 mb-12">
