@@ -1,24 +1,40 @@
-'use client'
+"use client";
 
-export function Topbar() {
+import Link from "next/link";
+import {Bell,User,Sparkle } from 'lucide-react'
+
+export default function TopNav() {
   return (
-    <header className="bg-white border-b border-gray-100 px-6 py-3 flex items-center gap-3">
-      <div className="flex-1 flex items-center gap-2 bg-gray-50 border border-gray-100 rounded-lg px-3 py-2">
-        <i className="ti ti-search text-gray-400 text-sm" aria-hidden="true" />
-        <span className="text-sm text-gray-400">Search clients, orders, fabric…</span>
+    <header className="fixed top-0 left-0 right-0 z-50 flex justify-between items-center h-20 px-10 bg-background/80 backdrop-blur-md border-b border-outline-variant">
+      {/* Brand */}
+      <div className="flex items-center gap-8">
+        <Link href="/dashboard" className="font-display-lg text-2xl text-primary tracking-tight">
+          ThreadFlow AI
+        </Link>
       </div>
 
-      <button
-        className="w-8 h-8 rounded-lg border border-gray-100 flex items-center justify-center hover:bg-gray-50 transition-colors"
-        aria-label="Notifications"
-      >
-        <i className="ti ti-bell text-gray-500 text-base" aria-hidden="true" />
-      </button>
-
-      <button className="flex items-center gap-1.5 bg-emerald-500 hover:bg-emerald-600 text-white rounded-lg px-4 py-2 text-sm font-medium transition-colors">
-        <i className="ti ti-plus text-sm" aria-hidden="true" />
-        New Order
-      </button>
+      {/* Right actions */}
+      <div className="flex items-center gap-4">
+        <button
+          className="text-on-surface-variant hover:text-primary transition-colors"
+          aria-label="Notifications"
+        >
+          <span className="material-symbols-outlined"><Bell /></span>
+        </button>
+        <button
+          className="text-on-surface-variant hover:text-primary transition-colors"
+          aria-label="Account"
+        >
+          <span className="material-symbols-outlined"><User /></span>
+        </button>
+        <Link
+          href="/agent"
+          className="flex items-center gap-2 bg-primary text-on-primary px-6 py-2.5 text-label-caps font-label-caps tracking-widest hover:opacity-90 transition-opacity"
+        >
+          <span className="material-symbols-outlined text-sm"><Sparkle /></span>
+          ASK AI
+        </Link>
+      </div>
     </header>
-  )
+  );
 }

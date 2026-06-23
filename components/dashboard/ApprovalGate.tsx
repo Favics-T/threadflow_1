@@ -1,65 +1,83 @@
-'use client'
+"use client";
 
-import { useState } from 'react'
-import type { PendingReply } from '@/lib/types/dashboard'
-
-const pendingReply: PendingReply = {
-  clientName: 'Adaeze Okonkwo',
-  message:
-    'Hello Adaeze, great news! Your order is on track and we are expecting to have it ready for you by Jun 28. We will reach out as soon as it is ready for pickup or delivery. Thank you for choosing us!',
-}
+import { useState } from "react";
 
 export function ApprovalGate() {
-  const [status, setStatus] = useState<'pending' | 'approved' | 'discarded'>('pending')
+  const [status, setStatus] = useState<"pending" | "approved" | "discarded">("pending");
 
-  if (status === 'approved') {
+  if (status === "approved") {
     return (
-      <div className="bg-white border border-gray-100 rounded-2xl p-5">
-        <div className="flex items-center gap-2 text-emerald-600">
-          <i className="ti ti-circle-check text-lg" aria-hidden="true" />
-          <span className="text-sm font-medium">Reply sent to {pendingReply.clientName}</span>
+      <div className="border border-outline-variant bg-surface-container-lowest p-6">
+        <div className="flex items-center gap-2">
+          <span className="material-symbols-outlined text-tertiary">check_circle</span>
+          <p className="text-body-sm font-body-sm text-on-surface">
+            Reply sent to Adaeze Okonkwo.
+          </p>
         </div>
       </div>
-    )
+    );
   }
 
-  if (status === 'discarded') {
+  if (status === "discarded") {
     return (
-      <div className="bg-white border border-gray-100 rounded-2xl p-5">
-        <p className="text-sm text-gray-400">Reply discarded. No message was sent.</p>
+      <div className="border border-outline-variant bg-surface-container-lowest p-6">
+        <p className="text-body-sm font-body-sm text-on-surface-variant">
+          Reply discarded. No message was sent.
+        </p>
       </div>
-    )
+    );
   }
 
   return (
-    <div className="bg-white border border-gray-100 rounded-2xl p-5">
-      <p className="text-[11px] text-gray-400 mb-3 uppercase tracking-wide">Pending approval</p>
+    <div className="border border-outline-variant bg-surface-container-lowest">
+      {/* Header */}
+      <div className="flex items-center justify-between px-6 py-5 border-b border-outline-variant">
+        <div>
+          <p className="text-label-caps font-label-caps text-on-surface-variant mb-1">
+            Pending Approval
+          </p>
+          <h2 className="font-headline-md text-headline-md text-primary">
+            Draft Reply
+          </h2>
+        </div>
+        <span className="material-symbols-outlined text-on-surface-variant">mark_chat_unread</span>
+      </div>
 
-      <div className="bg-emerald-50 border border-emerald-100 rounded-xl p-4">
-        <div className="flex items-center gap-1.5 mb-2">
-          <i className="ti ti-robot text-sm text-emerald-600" aria-hidden="true" />
-          <span className="text-xs font-medium text-emerald-700">
-            Draft for {pendingReply.clientName}
+      {/* Body */}
+      <div className="px-6 py-5">
+        {/* Agent source label */}
+        <div className="flex items-center gap-2 mb-4">
+          <span className="material-symbols-outlined text-sm text-tertiary">magic_button</span>
+          <span className="text-label-caps font-label-caps text-on-surface-variant">
+            AI drafted · for Adaeze Okonkwo
           </span>
         </div>
-        <p className="text-sm text-gray-700 leading-relaxed mb-4">
-          "{pendingReply.message}"
-        </p>
-        <div className="flex gap-2">
+
+        {/* Draft message */}
+        <div className="bg-surface-container-low border border-outline-variant p-4 mb-6">
+          <p className="text-body-sm font-body-sm text-on-surface leading-relaxed italic">
+            "Hello Adaeze, great news! Your order is on track and we are expecting
+            to have it ready for you by Jun 28. We will reach out as soon as it is
+            ready for pickup or delivery. Thank you for choosing us!"
+          </p>
+        </div>
+
+        {/* Actions — matching exact button pattern from existing code */}
+        <div className="flex gap-3">
           <button
-            onClick={() => setStatus('approved')}
-            className="bg-emerald-500 hover:bg-emerald-600 text-white text-xs font-medium px-4 py-2 rounded-lg transition-colors"
+            onClick={() => setStatus("approved")}
+            className="flex-1 py-3 bg-primary text-on-primary text-label-caps font-label-caps tracking-widest hover:opacity-90 transition-opacity"
           >
-            Approve & Send
+            APPROVE & SEND
           </button>
           <button
-            onClick={() => setStatus('discarded')}
-            className="text-gray-500 border border-gray-200 text-xs px-4 py-2 rounded-lg hover:bg-gray-50 transition-colors"
+            onClick={() => setStatus("discarded")}
+            className="flex-1 py-3 border border-outline-variant text-on-surface-variant text-label-caps font-label-caps hover:bg-surface-container transition-colors"
           >
-            Discard
+            DISCARD
           </button>
         </div>
       </div>
     </div>
-  )
+  );
 }
