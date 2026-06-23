@@ -124,6 +124,8 @@ export default function DashboardPage() {
 
       <MorningBriefWidget />
 
+      
+
       {/* Stat cards */}
       <section className="grid grid-cols-2 md:grid-cols-4 gap-4 mb-12">
         <StatCard label="Active Orders"    value={2} sub="1 in progress · 1 pending" icon= {<ConciergeBell /> }     />
