@@ -1,6 +1,4 @@
-bash
 
-cat > /mnt/user-data/outputs/README.md << 'EOF'
 # ThreadFlow AI
 
 > AI-powered operations manager for fashion houses and custom tailoring studios.
