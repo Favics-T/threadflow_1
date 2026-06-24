@@ -5,7 +5,7 @@ import {Bell,User,Sparkle } from 'lucide-react'
 
 export default function TopNav() {
   return (
-    <header className="fixed top-0 left-0 right-0 z-50 flex justify-between items-center h-20 px-10 bg-background/80 backdrop-blur-md border-b border-outline-variant">
+    <header className="fixed top-0 left-0 right-0 z-50 flex justify-between items-center h-20 px-10 bg-background/80 backdrop-blur-md border- shadow bordr-outline-variant">
       {/* Brand */}
       <div className="flex items-center gap-8">
         <Link href="/dashboard" className="font-display-lg text-2xl text-primary tracking-tight">

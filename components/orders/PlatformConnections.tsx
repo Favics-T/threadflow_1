@@ -76,13 +76,21 @@ export function PlatformConnections() {
 
   return (
     <section className="mb-12">
-      <div className="flex items-center justify-between mb-6">
+      <div className="flex flex-col gap-3 mb-6">
         <div>
           <h2 className="text-label-caps font-label-caps text-on-surface-variant uppercase tracking-widest mb-1">
             Connected Platforms
           </h2>
           <p className="text-body-sm font-body-sm text-on-surface-variant">
             {connectedCount} of {platforms.length} platforms connected
+          </p>
+        </div>
+        <div className="flex items-center gap-2">
+          <span className="rounded-full bg-surface-container px-2 py-1 text-label-caps font-label-caps text-on-surface-variant">
+            DEMO CONNECTORS
+          </span>
+          <p className="text-body-sm font-body-sm text-on-surface-variant">
+            These connections are simulated for the prototype. Real API integration will replace this demo state.
           </p>
         </div>
         {connectedCount > 0 && (
@@ -123,7 +131,7 @@ export function PlatformConnections() {
                   </span>
                 </div>
                 {isConnected && (
-                  <span className="w-2 h-2 rounded-full bg-[#10B981] mt-1 flex-shrink-0" />
+                  <span className="w-2 h-2 rounded-full bg-[#10B981] mt-1 shrink-0" />
                 )}
               </div>
 
