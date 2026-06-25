@@ -5,6 +5,7 @@ import { z } from 'zod'
 import { flagLowStock } from '@/lib/tools/flagLowStock'
 import { getTailorWorkload } from '@/lib/tools/get-tailor-workload'
 import { checkFabricStock } from '@/lib/tools/check-fabric-stock'
+import { google } from '@ai-sdk/google'
 
 export async function GET(req: Request) {
   const { searchParams } = new URL(req.url)
@@ -23,7 +24,7 @@ export async function GET(req: Request) {
   }
 
   const result = await generateText({
-    model: anthropic('claude-sonnet-4-6'),
+    model: anthropic('gemini-2.0-flash'),
     system: `You are ThreadFlow, an AI operations agent for a fashion house studio.
 Your job right now is to generate the Morning Brief — a prioritized daily summary
 for the studio manager.

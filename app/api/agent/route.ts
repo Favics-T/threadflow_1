@@ -11,12 +11,13 @@ import { getTailorWorkload } from '@/lib/tools/get-tailor-workload'
 import { checkOrderInputs } from '@/lib/tools/check-order-input'
 import { calculateDeliveryEstimate } from '@/lib/tools/calculate-delivery-estimate'
 import { draftClientReply } from '@/lib/tools/draft-client-reply'
+import { google } from '@ai-sdk/google'
 
 export async function POST(req: Request) {
   const { message } = await req.json()
 
   const result = await generateText({
-    model: anthropic('claude-sonnet-4-6'),
+    model: anthropic('gemini-2.0-flash'),
     system: `You are ThreadFlow, an AI operations agent for a fashion house studio.
 You have access to tools that let you check fabric stock, find clients, check order status,
 calculate delivery estimates, assign tailors, and draft client replies.
