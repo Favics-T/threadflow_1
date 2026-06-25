@@ -1,7 +1,7 @@
 'use client'
 
 import { useState, useTransition } from 'react'
-import { SourceBadge } from './SourceBadge'
+import { SourceBadge } from '@/components/ui/SourceBadge'
 import { CategoryTag } from './CategoryTag'
 import { approveAndSend } from '@/app/inbox/actions'
 import type { Message } from '@/types/threadflow'

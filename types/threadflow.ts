@@ -21,6 +21,7 @@ export type OrderStatus = 'confirmed' | 'in_production' | 'ready' | 'delivered'
 export interface Order {
   id: string
   message_id: string | null
+  collection_id: string | null
   client_name: string
   cloth_type: string
   description: string

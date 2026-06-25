@@ -1,6 +1,6 @@
 'use client'
 
-import { SourceBadge } from './SourceBadge'
+import { SourceBadge } from '@/components/ui/SourceBadge'
 import { CategoryTag } from './CategoryTag'
 import { formatRelativeTime } from '@/lib/format-time'
 import type { Message } from '@/types/threadflow'

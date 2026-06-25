@@ -5,8 +5,8 @@ import { createClient } from '@/lib/supabase/client'
 import { MessageCard } from './MessageCard'
 import { MessageDetailModal } from './MessageDetailModal'
 import { OrderFinalizationModal } from './OrderFinalizationModal'
-import { Toast } from './Toast'
-import type { Message, MessageStatus } from '@/types/threadflow'
+import { Toast } from '@/components/ui/Toast'
+import type { Collection, Message, MessageStatus } from '@/types/threadflow'
 
 const TABS: { key: MessageStatus; label: string }[] = [
   { key: 'unresponded', label: 'Needs Response' },
@@ -16,9 +16,11 @@ const TABS: { key: MessageStatus; label: string }[] = [
 
 export function InboxClient({
   initialMessages,
+  collections,
   usingMockData,
 }: {
   initialMessages: Message[]
+  collections: Collection[]
   usingMockData: boolean
 }) {
   const [messages, setMessages] = useState<Message[]>(initialMessages)
@@ -151,6 +153,7 @@ export function InboxClient({
         <OrderFinalizationModal
           key={finalizingMessage.id}
           message={finalizingMessage}
+          collections={collections}
           onClose={() => setFinalizingId(null)}
           onFinalized={(messageId) => {
             patchMessage({ id: messageId, status: 'finalized' })

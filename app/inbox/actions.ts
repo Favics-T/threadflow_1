@@ -2,6 +2,7 @@
 
 import { revalidatePath } from 'next/cache'
 import { createClient } from '@/lib/supabase/server'
+import { createOrder } from '@/lib/supabase/orders'
 import type { OrderType } from '@/types/threadflow'
 
 export async function approveAndSend(messageId: string, draftText: string) {
@@ -36,23 +37,23 @@ export async function finalizeOrder(input: {
   description: string
   deadline: string
   orderType: OrderType
+  collectionId: string | null
 }) {
-  const supabase = createClient()
-
-  const { error: orderError } = await supabase.from('orders').insert({
-    message_id: input.messageId,
-    client_name: input.clientName,
-    cloth_type: input.clothType,
+  const { error: orderError } = await createOrder({
+    messageId: input.messageId,
+    clientName: input.clientName,
+    clothType: input.clothType,
     description: input.description || null,
     deadline: input.deadline,
-    order_type: input.orderType,
-    status: 'confirmed',
+    orderType: input.orderType,
+    collectionId: input.collectionId,
   })
 
   if (orderError) {
-    return { error: orderError.message }
+    return { error: orderError }
   }
 
+  const supabase = createClient()
   const { error: messageError } = await supabase
     .from('messages')
     .update({ status: 'finalized' })
@@ -63,5 +64,7 @@ export async function finalizeOrder(input: {
   }
 
   revalidatePath('/inbox')
+  revalidatePath('/orders')
+  revalidatePath('/collections')
   return { ok: true }
 }

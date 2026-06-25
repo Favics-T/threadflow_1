@@ -2,21 +2,24 @@
 
 import { useRef, useState, useTransition } from 'react'
 import { finalizeOrder } from '@/app/inbox/actions'
-import type { Message, OrderType } from '@/types/threadflow'
+import type { Collection, Message, OrderType } from '@/types/threadflow'
 
 export function OrderFinalizationModal({
   message,
+  collections,
   onClose,
   onFinalized,
   showToast,
 }: {
   message: Message
+  collections: Collection[]
   onClose: () => void
   onFinalized: (messageId: string) => void
   showToast: (message: string, variant?: 'success' | 'error') => void
 }) {
   const formRef = useRef<HTMLFormElement>(null)
   const [orderType, setOrderType] = useState<OrderType>('bespoke')
+  const [collectionId, setCollectionId] = useState<string>(collections[0]?.id ?? '')
   const [isPending, startTransition] = useTransition()
   const [error, setError] = useState<string | null>(null)
 
@@ -34,6 +37,11 @@ export function OrderFinalizationModal({
       return
     }
 
+    if (orderType === 'collection' && !collectionId) {
+      setError('Select which collection this piece belongs to.')
+      return
+    }
+
     startTransition(async () => {
       const result = await finalizeOrder({
         messageId: message.id,
@@ -42,6 +50,7 @@ export function OrderFinalizationModal({
         description,
         deadline,
         orderType,
+        collectionId: orderType === 'collection' ? collectionId : null,
       })
 
       if (result.error) {
@@ -133,6 +142,31 @@ export function OrderFinalizationModal({
               ))}
             </div>
           </div>
+
+          {orderType === 'collection' && (
+            <div>
+              <label className="block text-label-caps font-label-caps text-on-surface-variant mb-2 uppercase">
+                Collection *
+              </label>
+              {collections.length > 0 ? (
+                <select
+                  value={collectionId}
+                  onChange={(e) => setCollectionId(e.target.value)}
+                  className="w-full bg-transparent border-b border-outline-variant focus:border-primary outline-none py-2 text-body-lg font-body-lg text-on-surface transition-colors"
+                >
+                  {collections.map((c) => (
+                    <option key={c.id} value={c.id}>
+                      {c.name}
+                    </option>
+                  ))}
+                </select>
+              ) : (
+                <p className="text-body-sm font-body-sm text-on-surface-variant">
+                  No collections yet — add one from the Collections page first.
+                </p>
+              )}
+            </div>
+          )}
 
           <div className="mt-auto pt-4 flex gap-3">
             <button type="button" onClick={onClose} className="flex-1 py-3 border border-outline-variant text-on-surface-variant text-label-caps font-label-caps hover:bg-surface-container transition-colors">
