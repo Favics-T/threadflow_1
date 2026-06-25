@@ -92,6 +92,15 @@ export async function getOrders(): Promise<{ data: BoardOrder[] | null; error: s
   return { data: (data as unknown as OrderRow[]).map(normalizeOrder), error: null }
 }
 
+/** A tailor's live workload — derived from active assignments, not the (possibly stale) tailors.current_load column. */
+export function getTailorLoad(tailorId: string, orders: BoardOrder[]): number {
+  return orders.filter((o) => o.status !== 'delivered' && o.assignment?.tailorId === tailorId).length
+}
+
+export function withLiveTailorLoad(tailors: Tailor[], orders: BoardOrder[]): Tailor[] {
+  return tailors.map((t) => ({ ...t, current_load: getTailorLoad(t.id, orders) }))
+}
+
 export async function getOrderById(id: string): Promise<{ data: BoardOrder | null; error: string | null }> {
   const supabase = createClient()
 

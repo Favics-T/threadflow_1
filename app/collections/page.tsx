@@ -1,8 +1,13 @@
+import type { Metadata } from 'next'
 import { createClient } from '@/lib/supabase/server'
 import { mockCollections } from '@/lib/mock-data'
 import { getOrders, getMockOrders } from '@/lib/supabase/orders'
 import { CollectionsClient } from '@/components/collections/CollectionsClient'
 import type { Collection } from '@/types/threadflow'
+
+export const metadata: Metadata = {
+  title: 'Collections',
+}
 
 export default async function CollectionsPage() {
   const supabase = createClient()

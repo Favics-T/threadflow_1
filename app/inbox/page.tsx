@@ -1,7 +1,12 @@
+import type { Metadata } from 'next'
 import { createClient } from '@/lib/supabase/server'
 import { mockMessages, mockCollections } from '@/lib/mock-data'
 import { InboxClient } from '@/components/inbox/InboxClient'
 import type { Collection, Message } from '@/types/threadflow'
+
+export const metadata: Metadata = {
+  title: 'Inbox',
+}
 
 export default async function InboxPage() {
   const supabase = createClient()

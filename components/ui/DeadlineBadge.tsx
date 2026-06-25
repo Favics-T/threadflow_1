@@ -1,9 +1,9 @@
 import { getDeadlineUrgency, formatDeadline, daysUntil } from '@/lib/deadline'
 
 const URGENCY_STYLES = {
-  red: 'bg-error-container text-on-error-container',
-  yellow: 'bg-amber-50 text-amber-800',
-  green: 'bg-tertiary-fixed text-on-tertiary-fixed-variant',
+  red: 'bg-urgent/10 text-urgent',
+  yellow: 'bg-warning/10 text-warning',
+  green: 'bg-success/10 text-success',
 } as const
 
 export function DeadlineBadge({ deadline }: { deadline: string }) {

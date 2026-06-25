@@ -7,16 +7,10 @@ import { UnassignedOrdersSection } from './UnassignedOrdersSection'
 import { AutoAssignPreviewModal } from './AutoAssignPreviewModal'
 import { Toast } from '@/components/ui/Toast'
 import { assignTailorsToOrders, getAtRiskOrders, type AssignmentSuggestion } from '@/lib/assignment-engine'
+import { withLiveTailorLoad } from '@/lib/supabase/orders'
 import type { CreatedAssignment } from '@/app/tailors/actions'
 import type { Tailor } from '@/types/threadflow'
 import type { BoardOrder, BoardOrderAssignment } from '@/lib/supabase/orders'
-
-function withLiveLoad(tailors: Tailor[], orders: BoardOrder[]): Tailor[] {
-  return tailors.map((t) => ({
-    ...t,
-    current_load: orders.filter((o) => o.assignment?.tailorId === t.id && o.status !== 'delivered').length,
-  }))
-}
 
 export function TailorsDashboardClient({
   initialTailors,
@@ -37,7 +31,7 @@ export function TailorsDashboardClient({
     setTimeout(() => setToast(null), 3500)
   }
 
-  const liveTailors = withLiveLoad(tailors, orders)
+  const liveTailors = withLiveTailorLoad(tailors, orders)
   const atRiskOrders = getAtRiskOrders(orders)
   const unassignedOrders = orders.filter((o) => o.status === 'confirmed')
 

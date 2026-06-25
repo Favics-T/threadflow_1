@@ -34,6 +34,7 @@ export function TailorCard({
         return
       }
       onAvailabilityChange(tailor.id, next)
+      showToast(`${tailor.name} marked as ${next ? 'available' : 'unavailable'}.`)
     })
   }
 

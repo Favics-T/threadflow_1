@@ -30,6 +30,7 @@ export function AssignmentRow({
         return
       }
       onApproved(order.id, next)
+      showToast(next ? `Assignment approved for ${order.client_name}.` : 'Approval removed.')
     })
   }
 

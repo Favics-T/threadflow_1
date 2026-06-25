@@ -68,7 +68,7 @@ export function AutoAssignPreviewModal({
               <div
                 key={s.orderId}
                 className={`border px-5 py-4 ${
-                  s.isUrgent ? 'border-error-container bg-error-container/20' : 'border-outline-variant'
+                  s.isUrgent ? 'border-urgent/40 bg-urgent/10' : 'border-outline-variant'
                 }`}
               >
                 <div className="flex items-start justify-between gap-3 mb-2 flex-wrap">
@@ -76,7 +76,7 @@ export function AutoAssignPreviewModal({
                     {s.clientName} — {s.clothType}
                   </p>
                   {s.isUrgent && (
-                    <span className="text-label-caps font-label-caps px-2 py-0.5 bg-error text-on-error whitespace-nowrap">
+                    <span className="text-label-caps font-label-caps px-2 py-0.5 bg-urgent text-white whitespace-nowrap">
                       URGENT
                     </span>
                   )}
