@@ -1,12 +1,15 @@
 'use client'
+import { Languages, SwitchCamera } from 'lucide-react'
+import { FaFacebook, FaWhatsapp } from "react-icons/fa6";
 
-import { useState } from 'react'
+import { ReactNode, useState } from 'react'
+import { BsTwitter, BsWhatsapp } from 'react-icons/bs';
 
 type Platform = {
   id: string
   name: string
   description: string
-  icon: string
+  icon: ReactNode | string
   color: string
   connected: boolean
 }
@@ -16,7 +19,7 @@ const platforms: Platform[] = [
     id: 'instagram',
     name: 'Instagram',
     description: 'Capture orders from DMs and story replies',
-    icon: 'photo_camera',
+    icon: <SwitchCamera /> ,
     color: '#E1306C',
     connected: true,
   },
@@ -24,7 +27,7 @@ const platforms: Platform[] = [
     id: 'whatsapp',
     name: 'WhatsApp',
     description: 'Read incoming order messages automatically',
-    icon: 'chat',
+    icon: <BsWhatsapp />,
     color: '#25D366',
     connected: false,
   },
@@ -32,7 +35,7 @@ const platforms: Platform[] = [
     id: 'facebook',
     name: 'Facebook',
     description: 'Track orders from page messages and posts',
-    icon: 'thumb_up',
+    icon: <FaFacebook />,
     color: '#1877F2',
     connected: false,
   },
@@ -40,7 +43,7 @@ const platforms: Platform[] = [
     id: 'twitter',
     name: 'X / Twitter',
     description: 'Monitor mentions and DMs for order requests',
-    icon: 'alternate_email',
+    icon: <BsTwitter />,
     color: '#000000',
     connected: false,
   },
@@ -48,7 +51,7 @@ const platforms: Platform[] = [
     id: 'website',
     name: 'Business Website',
     description: 'Connect your order form or booking page',
-    icon: 'language',
+    icon: <Languages />,
     color: '#4F46E5',
     connected: true,
   },
@@ -105,13 +108,13 @@ export function PlatformConnections() {
 
       <div className="grid grid-cols-5 gap-4">
         {platforms.map((platform) => {
-          const isConnected = platformStates[platform.id]
+         const isConnected = platformStates[platform.id]
           const isConnecting = connecting === platform.id
 
           return (
             <div
               key={platform.id}
-              className={`border bg-surface-container-lowest p-6 flex flex-col gap-4 transition-all ${
+              className={`borde shadow rounded bg-surface-container-lowest p-6 flex flex-col gap-4 transition-all ${
                 isConnected
                   ? 'border-primary'
                   : 'border-outline-variant hover:border-primary'
@@ -151,7 +154,7 @@ export function PlatformConnections() {
                 disabled={isConnecting}
                 className={`mt-auto w-full py-2 text-label-caps font-label-caps tracking-widest transition-all disabled:opacity-50 ${
                   isConnected
-                    ? 'border border-outline-variant text-on-surface-variant hover:bg-surface-container'
+                    ? 'borde borde-outline-variant text-on-surface-variant hover:bg-surface-container'
                     : 'bg-primary text-on-primary hover:opacity-90'
                 }`}
               >

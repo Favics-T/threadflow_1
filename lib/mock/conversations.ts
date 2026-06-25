@@ -1,17 +1,15 @@
-// ── Mock Conversations Data ───────────────────────────────────────────────────
-// Realistic seed data mirroring the shape of the future `conversations` Supabase
-// table. Replace these imports with live Supabase queries when the table is ready.
-
 import type {
-  UnrespondedMessage,
-  ConversationInProgress,
-  FinalizedOrder,
+  NoResponseMessage,
+  PendingConversation,
+  DoneConversation,
+  ProductionOrder,
+  TailorAssignment,
 } from '@/lib/types/conversations'
 
-// ── Stage 1: Unresponded Messages (5 entries) ─────────────────────────────────
-export const mockUnrespondedMessages: UnrespondedMessage[] = [
+// ── Stage 1: No Response ──────────────────────────────────────────────────────
+export const mockNoResponseMessages: NoResponseMessage[] = [
   {
-    id: 'conv-u-001',
+    id: 'conv-nr-001',
     clientName: 'Kemi Adeleke',
     platform: 'instagram',
     message:
@@ -20,7 +18,7 @@ export const mockUnrespondedMessages: UnrespondedMessage[] = [
     priority: 'high',
   },
   {
-    id: 'conv-u-002',
+    id: 'conv-nr-002',
     clientName: 'Ngozi Obi',
     platform: 'website',
     message:
@@ -29,7 +27,7 @@ export const mockUnrespondedMessages: UnrespondedMessage[] = [
     priority: 'normal',
   },
   {
-    id: 'conv-u-003',
+    id: 'conv-nr-003',
     clientName: 'Fatima Al-Hassan',
     platform: 'whatsapp',
     message:
@@ -38,102 +36,228 @@ export const mockUnrespondedMessages: UnrespondedMessage[] = [
     priority: 'high',
   },
   {
-    id: 'conv-u-004',
+    id: 'conv-nr-004',
     clientName: 'Chioma Eze',
     platform: 'facebook',
     message:
-      'Saw the pictures from your last collection - absolutely stunning! Do you take walk-in clients or strictly by appointment?',
+      'Saw the pictures from your last collection — absolutely stunning! Do you take walk-in clients or strictly by appointment?',
     timestamp: '2 hrs ago',
     priority: 'low',
   },
-  {
-    id: 'conv-u-005',
-    clientName: 'Amara Nwosu',
-    platform: 'instagram',
-    message:
-      'Hello, I want to place an order for bridesmaids dresses (6 ladies). Can you handle bulk orders? My wedding is in March.',
-    timestamp: '3 hrs ago',
-    priority: 'high',
-  },
 ]
 
-// ── Stage 2: Communication In Progress (3 entries) ────────────────────────────
-export const mockConversationsInProgress: ConversationInProgress[] = [
+// ── Stage 2: Pending ──────────────────────────────────────────────────────────
+export const mockPendingConversations: PendingConversation[] = [
   {
     id: 'conv-p-001',
     clientName: 'Adaeze Okonkwo',
+    platform: 'instagram',
     summary:
-      "Client wants an aso-ebi lace gown for her sister's wedding. Budget confirmed at N85,000. Finalising measurements and fabric colour.",
-    collectedInfo: ['Event Date (Aug 12)', 'Garment Type (Lace gown)', 'Budget (N85,000)'],
+      "Client wants an aso-ebi lace gown for her sister's wedding. Budget confirmed at ₦85,000. Finalising measurements and fabric colour.",
+    collectedInfo: ['Event Date (Aug 12)', 'Garment Type (Lace gown)', 'Budget (₦85,000)'],
     missingInfo: ['Measurements', 'Fabric Colour Choice'],
+    lastMessageAt: '35 min ago',
   },
   {
     id: 'conv-p-002',
     clientName: 'Blessing Taiwo',
+    platform: 'whatsapp',
     summary:
-      'Corporate client requesting 3 pieces - two blazer suits and one evening dress. Exploring premium suiting fabric options.',
+      'Corporate client requesting 3 pieces — two blazer suits and one evening dress. Exploring premium suiting fabric options.',
     collectedInfo: ['Garment Types (2 suits, 1 gown)', 'Company Name', 'Preferred Colour Palette'],
     missingInfo: ['Measurements (all 3)', 'Deadline', 'Budget Approval'],
+    lastMessageAt: '2 hrs ago',
   },
   {
     id: 'conv-p-003',
     clientName: 'Yetunde Balogun',
+    platform: 'whatsapp',
     summary:
-      'Repeat client ordering a custom agbada set for her husband. Measurements on file from last order. Waiting on delivery date confirmation.',
-    collectedInfo: ['Garment Type (Agbada)', 'Fabric Choice (White guinea brocade)', 'Measurements (on file)'],
+      'Repeat client ordering a custom agbada set for her husband. Measurements on file. Waiting on delivery date confirmation.',
+    collectedInfo: [
+      'Garment Type (Agbada)',
+      'Fabric Choice (White guinea brocade)',
+      'Measurements (on file)',
+    ],
     missingInfo: ['Agreed Delivery Date'],
+    lastMessageAt: '4 hrs ago',
   },
 ]
 
-// ── Stage 3: Finalized Orders (7 entries) ─────────────────────────────────────
-export const mockFinalizedOrders: FinalizedOrder[] = [
+// ── Stage 3: Done ─────────────────────────────────────────────────────────────
+export const mockDoneConversations: DoneConversation[] = [
   {
-    id: 'conv-f-001',
+    id: 'conv-d-001',
     clientName: 'Kelechi Uba',
-    garmentType: 'Ankara Maxi Dress',
+    platform: 'instagram',
+    garmentDescription: 'Ankara Maxi Dress — burgundy & gold, size 12, midi length',
+    agreedDeliveryDate: 'Jul 5, 2026',
+    concludedAt: 'Yesterday, 3:14 PM',
+    pushedToOrders: true,
+  },
+  {
+    id: 'conv-d-002',
+    clientName: 'Ifunanya Musa',
+    platform: 'website',
+    garmentDescription: 'Fitted Blazer Suit — navy blue, size 10, single-breasted',
+    agreedDeliveryDate: 'Jul 3, 2026',
+    concludedAt: 'Yesterday, 11:42 AM',
+    pushedToOrders: true,
+  },
+  {
+    id: 'conv-d-003',
+    clientName: 'Chiamaka Nnaji',
+    platform: 'whatsapp',
+    garmentDescription: 'Kaftan & Gele Set — royal blue george fabric, size 16',
+    agreedDeliveryDate: 'Jun 28, 2026',
+    concludedAt: '2 days ago',
+    pushedToOrders: true,
+  },
+]
+
+// ── Production Orders (shown on /orders) ─────────────────────────────────────
+export const mockProductionOrders: ProductionOrder[] = [
+  {
+    id: 'ord-001',
+    clientName: 'Kelechi Uba',
+    garmentDescription: 'Ankara Maxi Dress — burgundy & gold, size 12, midi length',
     agreedDeliveryDate: 'Jul 5, 2026',
     productionStatus: 'in_production',
+    tailorName: 'Emeka Osei',
+    conversationId: 'conv-d-001',
+    platform: 'instagram',
   },
   {
-    id: 'conv-f-002',
+    id: 'ord-002',
     clientName: 'Sade Ogundimu',
-    garmentType: 'Lace Evening Gown',
+    garmentDescription: 'Lace Evening Gown — champagne, size 8, floor-length with train',
     agreedDeliveryDate: 'Jul 10, 2026',
     productionStatus: 'quality_control',
+    tailorName: 'Amaka Eze',
+    conversationId: 'conv-d-004',
+    platform: 'facebook',
   },
   {
-    id: 'conv-f-003',
+    id: 'ord-003',
     clientName: 'Ifunanya Musa',
-    garmentType: 'Fitted Blazer Suit',
+    garmentDescription: 'Fitted Blazer Suit — navy blue, size 10, single-breasted',
     agreedDeliveryDate: 'Jul 3, 2026',
-    productionStatus: 'ready_for_delivery',
+    productionStatus: 'pending_confirmation',
+    conversationId: 'conv-d-002',
+    platform: 'website',
   },
   {
-    id: 'conv-f-004',
+    id: 'ord-004',
     clientName: 'Tunde Ajayi',
-    garmentType: 'Agbada Set (3-piece)',
+    garmentDescription: 'Agbada Set (3-piece) — white & gold embroidery, size XL',
     agreedDeliveryDate: 'Jul 18, 2026',
-    productionStatus: 'assigned',
+    productionStatus: 'confirmed',
+    conversationId: 'conv-d-005',
+    platform: 'whatsapp',
   },
   {
-    id: 'conv-f-005',
+    id: 'ord-005',
     clientName: 'Miriam Okafor',
-    garmentType: 'Bridesmaids Dress x4',
+    garmentDescription: 'Bridesmaids Dress x4 — dusty rose, sizes 10/12/14/16',
     agreedDeliveryDate: 'Aug 2, 2026',
-    productionStatus: 'unassigned',
+    productionStatus: 'pending_confirmation',
+    conversationId: 'conv-d-006',
+    platform: 'instagram',
   },
   {
-    id: 'conv-f-006',
+    id: 'ord-006',
     clientName: 'Chiamaka Nnaji',
-    garmentType: 'Kaftan & Gele Set',
+    garmentDescription: 'Kaftan & Gele Set — royal blue george fabric, size 16',
     agreedDeliveryDate: 'Jun 28, 2026',
-    productionStatus: 'delivered',
+    productionStatus: 'ready_for_delivery',
+    tailorName: 'Emeka Osei',
+    conversationId: 'conv-d-003',
+    platform: 'whatsapp',
   },
   {
-    id: 'conv-f-007',
+    id: 'ord-007',
     clientName: 'Remi Fashola',
-    garmentType: 'Corporate Shirt x5',
+    garmentDescription: 'Corporate Shirt x5 — white poplin, various sizes',
     agreedDeliveryDate: 'Jul 14, 2026',
-    productionStatus: 'in_production',
+    productionStatus: 'assigned',
+    tailorName: 'Chidinma Adeyemi',
+    conversationId: 'conv-d-007',
+    platform: 'whatsapp',
+  },
+]
+
+// ── Past Assignments (shown on /workforce history) ────────────────────────────
+export const mockPastAssignments: TailorAssignment[] = [
+  {
+    id: 'asgn-001',
+    tailorId: 't-1',
+    tailorName: 'Emeka Osei',
+    orderId: 'ord-hist-001',
+    clientName: 'Funmi Balogun',
+    garmentDescription: 'Wedding gown — ivory lace, floor length',
+    suggestedByAI: true,
+    approvedByOwner: true,
+    assignedAt: 'Jun 2, 2026',
+    completedAt: 'Jun 18, 2026',
+  },
+  {
+    id: 'asgn-002',
+    tailorId: 't-2',
+    tailorName: 'Amaka Eze',
+    orderId: 'ord-hist-002',
+    clientName: 'Tolu Adeyemi',
+    garmentDescription: 'Ankara two-piece set',
+    suggestedByAI: true,
+    approvedByOwner: true,
+    assignedAt: 'Jun 5, 2026',
+    completedAt: 'Jun 12, 2026',
+  },
+  {
+    id: 'asgn-003',
+    tailorId: 't-1',
+    tailorName: 'Emeka Osei',
+    orderId: 'ord-hist-003',
+    clientName: 'Grace Nwosu',
+    garmentDescription: 'Corporate blazer suit x2',
+    suggestedByAI: false,
+    approvedByOwner: true,
+    assignedAt: 'May 20, 2026',
+    completedAt: 'Jun 1, 2026',
+  },
+  {
+    id: 'asgn-004',
+    tailorId: 't-3',
+    tailorName: 'Chidinma Adeyemi',
+    orderId: 'ord-hist-004',
+    clientName: 'Nneka Obi',
+    garmentDescription: 'Aso-ebi lace gown',
+    suggestedByAI: true,
+    approvedByOwner: true,
+    assignedAt: 'May 15, 2026',
+    completedAt: 'May 28, 2026',
+  },
+  {
+    id: 'asgn-005',
+    tailorId: 't-2',
+    tailorName: 'Amaka Eze',
+    orderId: 'ord-hist-005',
+    clientName: 'Jumoke Ade',
+    garmentDescription: 'Bridesmaids dresses x3',
+    suggestedByAI: true,
+    approvedByOwner: true,
+    assignedAt: 'Apr 28, 2026',
+    completedAt: 'May 14, 2026',
+  },
+  {
+    id: 'asgn-006',
+    tailorId: 't-3',
+    tailorName: 'Chidinma Adeyemi',
+    orderId: 'ord-hist-006',
+    clientName: 'Bisi Okonkwo',
+    garmentDescription: 'Kaftan set — adire fabric',
+    suggestedByAI: false,
+    approvedByOwner: true,
+    assignedAt: 'Apr 10, 2026',
+    completedAt: 'Apr 22, 2026',
   },
 ]
