@@ -1,4 +1,4 @@
-import { DeadlineBadge } from '@/components/orders/board/DeadlineBadge'
+import { DeadlineBadge } from '@/components/ui/DeadlineBadge'
 import type { Collection, OrderStatus } from '@/types/threadflow'
 import type { BoardOrder } from '@/lib/supabase/orders'
 

@@ -1,9 +1,9 @@
 'use client'
 
 import { useState } from 'react'
+import { useRouter } from 'next/navigation'
 import { OrderCard } from './OrderCard'
 import { OrderDetailDrawer } from './OrderDetailDrawer'
-import { Toast } from '@/components/ui/Toast'
 import type { OrderStatus } from '@/types/threadflow'
 import type { BoardOrder } from '@/lib/supabase/orders'
 
@@ -28,14 +28,9 @@ export function OrdersBoardClient({
   initialOrders: BoardOrder[]
   usingMockData: boolean
 }) {
+  const router = useRouter()
   const [orders] = useState<BoardOrder[]>(initialOrders)
   const [selectedId, setSelectedId] = useState<string | null>(null)
-  const [toast, setToast] = useState<{ message: string; variant: 'success' | 'error' } | null>(null)
-
-  function showToast(message: string, variant: 'success' | 'error' = 'success') {
-    setToast({ message, variant })
-    setTimeout(() => setToast(null), 3500)
-  }
 
   const selectedOrder = orders.find((o) => o.id === selectedId) ?? null
 
@@ -100,11 +95,9 @@ export function OrdersBoardClient({
         <OrderDetailDrawer
           order={selectedOrder}
           onClose={() => setSelectedId(null)}
-          onAssignRequested={() => showToast('Tailor assignment is coming soon.', 'error')}
+          onAssignRequested={() => router.push('/tailors')}
         />
       )}
-
-      {toast && <Toast message={toast.message} variant={toast.variant} />}
     </main>
   )
 }

@@ -1,8 +1,8 @@
 'use client'
 
 import { SourceBadge } from '@/components/ui/SourceBadge'
+import { DeadlineBadge } from '@/components/ui/DeadlineBadge'
 import { OrderTypeBadge } from './OrderTypeBadge'
-import { DeadlineBadge } from './DeadlineBadge'
 import type { BoardOrder } from '@/lib/supabase/orders'
 import type { OrderStatus } from '@/types/threadflow'
 

@@ -5,10 +5,14 @@ import type { Order, OrderStatus, OrderType, Message, Tailor } from '@/types/thr
 export type BoardOrderMessage = Pick<Message, 'id' | 'source' | 'client_contact' | 'content'>
 
 export type BoardOrderAssignment = {
+  assignmentId: string
+  tailorId: string
   tailorName: string
   specialty: string | null
   roleDescription: string | null
   approvedByTailor: boolean
+  editedByTailor: boolean
+  assignedAt: string
 }
 
 export type BoardOrder = Order & {
@@ -25,8 +29,12 @@ function firstRelation<T>(relation: SupabaseRelation<T>): T | null {
 type OrderRow = Order & {
   messages: SupabaseRelation<BoardOrderMessage>
   tailor_assignments: {
+    id: string
+    tailor_id: string
     role_description: string | null
     approved_by_tailor: boolean
+    edited_by_tailor: boolean
+    assigned_at: string
     tailors: SupabaseRelation<Pick<Tailor, 'id' | 'name' | 'specialty'>>
   }[]
 }
@@ -35,8 +43,12 @@ const ORDER_SELECT = `
   *,
   messages ( id, source, client_contact, content ),
   tailor_assignments (
+    id,
+    tailor_id,
     role_description,
     approved_by_tailor,
+    edited_by_tailor,
+    assigned_at,
     tailors ( id, name, specialty )
   )
 `
@@ -49,14 +61,19 @@ function normalizeOrder(row: OrderRow): BoardOrder {
   return {
     ...row,
     message: message ?? null,
-    assignment: tailor
-      ? {
-          tailorName: tailor.name,
-          specialty: tailor.specialty,
-          roleDescription: assignmentRow?.role_description ?? null,
-          approvedByTailor: assignmentRow?.approved_by_tailor ?? false,
-        }
-      : null,
+    assignment:
+      assignmentRow && tailor
+        ? {
+            assignmentId: assignmentRow.id,
+            tailorId: assignmentRow.tailor_id,
+            tailorName: tailor.name,
+            specialty: tailor.specialty,
+            roleDescription: assignmentRow.role_description,
+            approvedByTailor: assignmentRow.approved_by_tailor,
+            editedByTailor: assignmentRow.edited_by_tailor,
+            assignedAt: assignmentRow.assigned_at,
+          }
+        : null,
   }
 }
 
@@ -142,14 +159,19 @@ export function getMockOrders(): BoardOrder[] {
       message: message
         ? { id: message.id, source: message.source, client_contact: message.client_contact, content: message.content }
         : null,
-      assignment: tailor
-        ? {
-            tailorName: tailor.name,
-            specialty: tailor.specialty,
-            roleDescription: assignmentRow?.role_description ?? null,
-            approvedByTailor: assignmentRow?.approved_by_tailor ?? false,
-          }
-        : null,
+      assignment:
+        assignmentRow && tailor
+          ? {
+              assignmentId: assignmentRow.id,
+              tailorId: assignmentRow.tailor_id,
+              tailorName: tailor.name,
+              specialty: tailor.specialty,
+              roleDescription: assignmentRow.role_description,
+              approvedByTailor: assignmentRow.approved_by_tailor,
+              editedByTailor: assignmentRow.edited_by_tailor,
+              assignedAt: assignmentRow.assigned_at,
+            }
+          : null,
     }
   })
 }

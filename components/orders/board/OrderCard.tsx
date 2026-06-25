@@ -1,6 +1,6 @@
 'use client'
 
-import { DeadlineBadge } from './DeadlineBadge'
+import { DeadlineBadge } from '@/components/ui/DeadlineBadge'
 import { OrderTypeBadge } from './OrderTypeBadge'
 import type { BoardOrder } from '@/lib/supabase/orders'
 
