@@ -1,159 +1,165 @@
 'use client'
 
-import { useCallback, useEffect, useState } from 'react'
-import { createClient } from '@/lib/supabase/client'
-import { MessageDetailModal } from './MessageDetailModal'
-import { OrderFinalizationModal } from './OrderFinalizationModal'
-import { PlatformConnections } from './PlatformConnections'
-import { StatusPill } from './StatusPill'
-import { Toast } from '@/components/ui/Toast'
-import { formatRelativeTime } from '@/lib/format-time'
-import type { Collection, Message, MessageStatus } from '@/types/threadflow'
+import { useMemo, useState } from 'react'
+import {
+  mockNoResponseMessages,
+  mockPendingConversations,
+  mockDoneConversations,
+} from '@/lib/mock/conversations'
+import type { ConversationPlatform } from '@/lib/types/conversations'
+import type { Collection, Message } from '@/types/threadflow'
 
-const FILTERS: { key: MessageStatus | 'all'; label: string }[] = [
-  { key: 'all', label: 'All' },
-  { key: 'unresponded', label: 'Needs Response' },
-  { key: 'responded', label: 'Responded' },
-  { key: 'finalized', label: 'Finalized' },
-]
+type RowStatus = 'no_response' | 'pending' | 'done'
 
-const SOURCE_ICON: Record<Message['source'], { icon: string; className: string }> = {
-  instagram: { icon: 'photo_camera', className: 'text-pink-600' },
-  whatsapp: { icon: 'chat', className: 'text-green-600' },
-  facebook: { icon: 'thumb_up', className: 'text-blue-600' },
-  website: { icon: 'language', className: 'text-on-surface-variant' },
+interface InboxRow {
+  id: string
+  clientName: string
+  platform: ConversationPlatform
+  message: string
+  time: string
+  status: RowStatus
+  highPriority: boolean
 }
+
+const PLATFORM_CONFIG: Record<ConversationPlatform, { icon: string; color: string }> = {
+  instagram: { icon: 'photo_camera', color: '#E1306C' },
+  whatsapp: { icon: 'chat', color: '#25D366' },
+  facebook: { icon: 'thumb_up', color: '#1877F2' },
+  website: { icon: 'language', color: '#4F46E5' },
+}
+
+const STATUS_CONFIG: Record<RowStatus, { label: string; className: string }> = {
+  no_response: { label: 'No Response', className: 'bg-warning/10 text-warning' },
+  pending: { label: 'Pending', className: 'bg-blue-100 text-blue-700' },
+  done: { label: 'Done', className: 'bg-success/10 text-success' },
+}
+
+const HIGH_PRIORITY_CLASSNAME = 'bg-urgent/10 text-urgent'
+
+const FILTERS: { key: 'all' | RowStatus; label: string }[] = [
+  { key: 'all', label: 'All' },
+  { key: 'no_response', label: 'No Response' },
+  { key: 'pending', label: 'Pending' },
+  { key: 'done', label: 'Done' },
+]
 
 function getInitials(name: string): string {
   const parts = name.trim().split(/\s+/)
   return ((parts[0]?.[0] ?? '') + (parts[1]?.[0] ?? '')).toUpperCase()
 }
 
+function formatDateRange(): string {
+  const end = new Date()
+  const start = new Date(end)
+  start.setDate(start.getDate() - 6)
+  const fmt = (d: Date) => d.toLocaleDateString('en-US', { month: 'short', day: 'numeric' })
+  return `${fmt(start)} – ${fmt(end)}, ${end.getFullYear()}`
+}
+
+function buildRows(): InboxRow[] {
+  const noResponseRows: InboxRow[] = mockNoResponseMessages.map((m) => ({
+    id: m.id,
+    clientName: m.clientName,
+    platform: m.platform,
+    message: m.message,
+    time: m.timestamp,
+    status: 'no_response',
+    highPriority: m.priority === 'high',
+  }))
+
+  const pendingRows: InboxRow[] = mockPendingConversations.map((c) => ({
+    id: c.id,
+    clientName: c.clientName,
+    platform: c.platform,
+    message: c.summary,
+    time: c.lastMessageAt,
+    status: 'pending',
+    highPriority: false,
+  }))
+
+  const doneRows: InboxRow[] = mockDoneConversations.map((c) => ({
+    id: c.id,
+    clientName: c.clientName,
+    platform: c.platform,
+    message: c.garmentDescription,
+    time: c.concludedAt,
+    status: 'done',
+    highPriority: false,
+  }))
+
+  return [...noResponseRows, ...pendingRows, ...doneRows]
+}
+
 export function InboxClient({
-  initialMessages,
-  collections,
+  initialMessages, // eslint-disable-line @typescript-eslint/no-unused-vars
+  collections, // eslint-disable-line @typescript-eslint/no-unused-vars
 }: {
   initialMessages: Message[]
   collections: Collection[]
 }) {
-  const [messages, setMessages] = useState<Message[]>(initialMessages)
-  const [activeFilter, setActiveFilter] = useState<MessageStatus | 'all'>('all')
+  const allRows = useMemo(() => buildRows(), [])
+  const [activeFilter, setActiveFilter] = useState<'all' | RowStatus>('all')
   const [search, setSearch] = useState('')
-  const [selectedId, setSelectedId] = useState<string | null>(null)
-  const [finalizingId, setFinalizingId] = useState<string | null>(null)
-  const [toast, setToast] = useState<{ message: string; variant: 'success' | 'error' } | null>(null)
 
-  const showToast = useCallback((message: string, variant: 'success' | 'error' = 'success') => {
-    setToast({ message, variant })
-  }, [])
-
-  useEffect(() => {
-    if (!toast) return
-    const timer = setTimeout(() => setToast(null), 3500)
-    return () => clearTimeout(timer)
-  }, [toast])
-
-  useEffect(() => {
-    const supabase = createClient()
-    const channel = supabase
-      .channel('messages-inbox')
-      .on(
-        'postgres_changes',
-        { event: '*', schema: 'public', table: 'messages' },
-        (payload) => {
-          setMessages((prev) => {
-            if (payload.eventType === 'DELETE') {
-              const removedId = (payload.old as { id?: string }).id
-              return prev.filter((m) => m.id !== removedId)
-            }
-            const incoming = payload.new as Message
-            const exists = prev.some((m) => m.id === incoming.id)
-            return exists
-              ? prev.map((m) => (m.id === incoming.id ? incoming : m))
-              : [incoming, ...prev]
-          })
-        }
-      )
-      .subscribe()
-
-    return () => {
-      supabase.removeChannel(channel)
-    }
-  }, [])
-
-  function patchMessage(patch: Partial<Message> & { id: string }) {
-    setMessages((prev) => prev.map((m) => (m.id === patch.id ? { ...m, ...patch } : m)))
+  const counts: Record<'all' | RowStatus, number> = {
+    all: allRows.length,
+    no_response: allRows.filter((r) => r.status === 'no_response').length,
+    pending: allRows.filter((r) => r.status === 'pending').length,
+    done: allRows.filter((r) => r.status === 'done').length,
   }
 
   const query = search.trim().toLowerCase()
 
-  const visibleMessages = messages
-    .filter((m) => activeFilter === 'all' || m.status === activeFilter)
-    .filter((m) => {
-      if (!query) return true
-      return (
-        m.client_name.toLowerCase().includes(query) ||
-        m.client_contact.toLowerCase().includes(query) ||
-        m.content.toLowerCase().includes(query) ||
-        (m.cloth_type ?? '').toLowerCase().includes(query)
-      )
-    })
-    .sort((a, b) => new Date(b.created_at).getTime() - new Date(a.created_at).getTime())
-
-  const counts: Record<MessageStatus | 'all', number> = {
-    all: messages.length,
-    unresponded: messages.filter((m) => m.status === 'unresponded').length,
-    responded: messages.filter((m) => m.status === 'responded').length,
-    finalized: messages.filter((m) => m.status === 'finalized').length,
-  }
-
-  const selectedMessage = messages.find((m) => m.id === selectedId) ?? null
-  const finalizingMessage = messages.find((m) => m.id === finalizingId) ?? null
+  const visibleRows = allRows
+    .filter((r) => activeFilter === 'all' || r.status === activeFilter)
+    .filter(
+      (r) => !query || r.clientName.toLowerCase().includes(query) || r.message.toLowerCase().includes(query)
+    )
 
   return (
     <main className="px-10 py-10 pb-16">
-      <header className="flex justify-between items-end mb-8">
-        <div>
-          <span className="text-label-caps font-label-caps text-on-surface-variant uppercase tracking-widest">
-            Client Communication
-          </span>
-          <h1 className="font-headline-lg text-headline-lg text-primary mt-1">Inbox</h1>
-          <p className="text-body-sm font-body-sm text-on-surface-variant mt-2">
-            {messages.length} conversations · Instagram, WhatsApp, Facebook & Website
-          </p>
-        </div>
+      <header className="mb-8">
+        <h1 className="font-headline-lg text-headline-lg text-primary">Inbox</h1>
+        <p className="text-body-sm font-body-sm text-on-surface-variant mt-1">
+          Last 7 days · {formatDateRange()}
+        </p>
       </header>
-
-      <PlatformConnections />
 
       <div className="flex items-center justify-between gap-4 flex-wrap mb-6">
         <div className="flex items-center gap-2 flex-wrap">
-          {FILTERS.map((filter) => (
-            <button
-              key={filter.key}
-              onClick={() => setActiveFilter(filter.key)}
-              className={`flex items-center gap-2 rounded-full px-4 py-2 text-label-caps font-label-caps tracking-widest transition-colors ${
-                activeFilter === filter.key
-                  ? 'bg-primary text-on-primary'
-                  : 'text-on-surface-variant hover:text-primary'
-              }`}
-            >
-              {filter.label}
-              <span
-                className={`rounded-full px-2 py-0.5 text-label-caps font-label-caps ${
-                  activeFilter === filter.key
-                    ? 'bg-on-primary/20 text-on-primary'
-                    : 'bg-surface-container text-on-surface-variant'
+          {FILTERS.map((filter) => {
+            const isActive = activeFilter === filter.key
+
+            return (
+              <button
+                key={filter.key}
+                onClick={() => setActiveFilter(filter.key)}
+                className={`flex items-center gap-2 rounded-full px-4 py-2 text-label-caps font-label-caps tracking-widest transition-colors ${
+                  isActive
+                    ? 'bg-primary text-on-primary'
+                    : 'border border-outline-variant text-on-surface-variant hover:text-primary'
                 }`}
               >
-                {counts[filter.key]}
-              </span>
-            </button>
-          ))}
+                {filter.label}
+                {filter.key !== 'all' && (
+                  <span
+                    className={`rounded-full px-2 py-0.5 text-label-caps font-label-caps ${
+                      isActive ? 'bg-on-primary/20 text-on-primary' : 'bg-surface-container text-on-surface-variant'
+                    }`}
+                  >
+                    {counts[filter.key]}
+                  </span>
+                )}
+              </button>
+            )
+          })}
         </div>
 
         <div className="relative">
-          <span className="material-symbols-outlined absolute left-3 top-1/2 -translate-y-1/2 text-on-surface-variant" style={{ fontSize: '18px' }}>
+          <span
+            className="material-symbols-outlined absolute left-3 top-1/2 -translate-y-1/2 text-on-surface-variant"
+            style={{ fontSize: '18px' }}
+          >
             search
           </span>
           <input
@@ -166,94 +172,83 @@ export function InboxClient({
         </div>
       </div>
 
-      <div className="border border-outline-variant bg-surface-container-lowest">
+      <div className="border border-outline-variant bg-surface-container-lowest overflow-x-auto">
         <table className="w-full border-collapse">
           <thead>
-            <tr className="border-b border-outline-variant bg-surface-container-low">
-              <th className="w-12 px-4 py-3" />
-              <th className="px-4 py-3 text-left text-label-caps font-label-caps text-on-surface-variant uppercase tracking-widest">Order</th>
-              <th className="px-4 py-3 text-left text-label-caps font-label-caps text-on-surface-variant uppercase tracking-widest">Items</th>
-              <th className="px-4 py-3 text-left text-label-caps font-label-caps text-on-surface-variant uppercase tracking-widest">Total</th>
-              <th className="px-4 py-3 text-left text-label-caps font-label-caps text-on-surface-variant uppercase tracking-widest">Time</th>
-              <th className="px-4 py-3 text-left text-label-caps font-label-caps text-on-surface-variant uppercase tracking-widest">Status</th>
+            <tr className="bg-surface-container">
+              <th className="w-12 px-4 py-3">
+                <input type="checkbox" className="h-4 w-4" aria-label="Select all" />
+              </th>
+              <th className="px-4 py-3 text-left text-label-caps font-label-caps text-on-surface-variant uppercase tracking-widest">
+                Platform
+              </th>
+              <th className="px-4 py-3 text-left text-label-caps font-label-caps text-on-surface-variant uppercase tracking-widest">
+                Client
+              </th>
+              <th className="px-4 py-3 text-left text-label-caps font-label-caps text-on-surface-variant uppercase tracking-widest">
+                Message
+              </th>
+              <th className="px-4 py-3 text-left text-label-caps font-label-caps text-on-surface-variant uppercase tracking-widest">
+                Time
+              </th>
+              <th className="px-4 py-3 text-left text-label-caps font-label-caps text-on-surface-variant uppercase tracking-widest">
+                Status
+              </th>
             </tr>
           </thead>
           <tbody>
-            {visibleMessages.length === 0 ? (
+            {visibleRows.length === 0 ? (
               <tr>
-                <td colSpan={6} className="px-6 py-12 text-center text-body-sm font-body-sm text-on-surface-variant">
-                  No conversations match this filter.
+                <td colSpan={6} className="px-4 py-12 text-center text-body-sm font-body-sm text-on-surface-variant">
+                  No messages match this filter.
                 </td>
               </tr>
             ) : (
-              visibleMessages.map((message) => {
-                const isConfirmed = message.status === 'finalized'
-                const sourceIcon = SOURCE_ICON[message.source]
+              visibleRows.map((row, i) => {
+                const platform = PLATFORM_CONFIG[row.platform]
+                const status = STATUS_CONFIG[row.status]
 
                 return (
                   <tr
-                    key={message.id}
-                    onClick={() => setSelectedId(message.id)}
-                    className="cursor-pointer border-b border-outline-variant last:border-b-0 transition-colors hover:bg-surface-container-low"
+                    key={row.id}
+                    className={`transition-colors hover:bg-surface-container/50 ${
+                      i < visibleRows.length - 1 ? 'border-b border-outline-variant' : ''
+                    }`}
                   >
-                    <td className="px-4 py-4">
+                    <td className="px-4 py-3">
+                      <input type="checkbox" className="h-4 w-4" aria-label={`Select ${row.clientName}`} />
+                    </td>
+                    <td className="px-4 py-3">
+                      <span className="material-symbols-outlined" style={{ color: platform.color, fontSize: '18px' }}>
+                        {platform.icon}
+                      </span>
+                    </td>
+                    <td className="px-4 py-3">
+                      <div className="flex items-center gap-2.5">
+                        <span className="flex h-7 w-7 shrink-0 items-center justify-center rounded-full bg-primary/20 text-label-caps font-label-caps text-primary">
+                          {getInitials(row.clientName)}
+                        </span>
+                        <span className="text-body-sm font-body-sm text-on-surface whitespace-nowrap">
+                          {row.clientName}
+                        </span>
+                      </div>
+                    </td>
+                    <td className="px-4 py-3 max-w-xs">
+                      <p className="text-body-sm font-body-sm text-on-surface-variant truncate">{row.message}</p>
+                    </td>
+                    <td className="px-4 py-3">
+                      <span className="text-label-caps font-label-caps text-on-surface-variant whitespace-nowrap">
+                        {row.time}
+                      </span>
+                    </td>
+                    <td className="px-4 py-3">
                       <span
-                        className={`flex h-5 w-5 items-center justify-center border ${
-                          isConfirmed ? 'border-primary bg-primary' : 'border-outline-variant bg-transparent'
+                        className={`rounded-full px-3 py-1 text-label-caps font-label-caps whitespace-nowrap ${
+                          row.highPriority ? HIGH_PRIORITY_CLASSNAME : status.className
                         }`}
                       >
-                        {isConfirmed && (
-                          <span className="material-symbols-outlined text-on-primary" style={{ fontSize: '14px' }}>
-                            check
-                          </span>
-                        )}
+                        {row.highPriority ? 'High Priority' : status.label}
                       </span>
-                    </td>
-
-                    <td className="px-4 py-4">
-                      <div className="flex items-center gap-2">
-                        <span className="material-symbols-outlined text-on-surface-variant" style={{ fontSize: '18px' }}>
-                          checkroom
-                        </span>
-                        <span className="text-body-sm font-body-sm font-semibold text-primary whitespace-nowrap">
-                          {message.cloth_type ?? 'Custom Order'}
-                        </span>
-                      </div>
-                    </td>
-
-                    <td className="px-4 py-4 max-w-sm">
-                      <p className="text-body-sm font-body-sm text-on-surface-variant line-clamp-2">
-                        {message.content}
-                      </p>
-                    </td>
-
-                    <td className="px-4 py-4">
-                      <div className="flex items-center gap-3">
-                        <span className="flex h-8 w-8 shrink-0 items-center justify-center rounded-full bg-surface-container-high text-label-caps font-label-caps text-on-surface-variant">
-                          {getInitials(message.client_name)}
-                        </span>
-                        <div className="min-w-0">
-                          <p className="text-body-sm font-body-sm font-semibold text-primary truncate">
-                            {message.client_name}
-                          </p>
-                          <p className="flex items-center gap-1 text-label-caps font-label-caps text-on-surface-variant truncate">
-                            <span className={`material-symbols-outlined ${sourceIcon.className}`} style={{ fontSize: '12px' }}>
-                              {sourceIcon.icon}
-                            </span>
-                            {message.client_contact}
-                          </p>
-                        </div>
-                      </div>
-                    </td>
-
-                    <td className="px-4 py-4">
-                      <span className="text-body-sm font-body-sm text-on-surface-variant whitespace-nowrap">
-                        {formatRelativeTime(message.created_at)}
-                      </span>
-                    </td>
-
-                    <td className="px-4 py-4">
-                      <StatusPill message={message} />
                     </td>
                   </tr>
                 )
@@ -262,34 +257,6 @@ export function InboxClient({
           </tbody>
         </table>
       </div>
-
-      {selectedMessage && (
-        <MessageDetailModal
-          key={selectedMessage.id}
-          message={selectedMessage}
-          onClose={() => setSelectedId(null)}
-          onApproved={patchMessage}
-          onRequestFinalize={() => setFinalizingId(selectedMessage.id)}
-          showToast={showToast}
-        />
-      )}
-
-      {finalizingMessage && (
-        <OrderFinalizationModal
-          key={finalizingMessage.id}
-          message={finalizingMessage}
-          collections={collections}
-          onClose={() => setFinalizingId(null)}
-          onFinalized={(messageId) => {
-            patchMessage({ id: messageId, status: 'finalized' })
-            setFinalizingId(null)
-            setSelectedId(null)
-          }}
-          showToast={showToast}
-        />
-      )}
-
-      {toast && <Toast message={toast.message} variant={toast.variant} />}
     </main>
   )
 }
