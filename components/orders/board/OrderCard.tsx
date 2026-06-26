@@ -31,6 +31,10 @@ export function OrderCard({ order, onClick }: { order: BoardOrder; onClick: () =
             {order.assignment.tailorName}
           </span>
         </div>
+      ) : !order.tailor_confirmed ? (
+        <span className="text-label-caps font-label-caps px-2 py-0.5 bg-warning/10 text-warning">
+          NEEDS CONFIRMATION
+        </span>
       ) : (
         <span className="text-label-caps font-label-caps px-2 py-0.5 bg-surface-container text-on-surface-variant">
           UNASSIGNED

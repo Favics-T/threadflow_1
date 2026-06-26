@@ -255,6 +255,7 @@ export const mockOrders: Order[] = [
     order_type: 'bespoke',
     collection_id: null,
     status: 'ready',
+    tailor_confirmed: true,
     created_at: '2026-06-15T09:00:00Z',
   },
   {
@@ -267,6 +268,7 @@ export const mockOrders: Order[] = [
     order_type: 'bespoke',
     collection_id: null,
     status: 'in_production',
+    tailor_confirmed: true,
     created_at: '2026-06-20T10:30:00Z',
   },
   {
@@ -279,6 +281,7 @@ export const mockOrders: Order[] = [
     order_type: 'collection',
     collection_id: 'col-001',
     status: 'delivered',
+    tailor_confirmed: true,
     created_at: '2026-06-17T13:00:00Z',
   },
   {
@@ -291,6 +294,7 @@ export const mockOrders: Order[] = [
     order_type: 'bespoke',
     collection_id: null,
     status: 'confirmed',
+    tailor_confirmed: false,
     created_at: '2026-06-24T14:10:00Z',
   },
   {
@@ -303,6 +307,7 @@ export const mockOrders: Order[] = [
     order_type: 'bespoke',
     collection_id: null,
     status: 'in_production',
+    tailor_confirmed: true,
     created_at: '2026-06-23T16:30:00Z',
   },
   {
@@ -315,6 +320,7 @@ export const mockOrders: Order[] = [
     order_type: 'bespoke',
     collection_id: null,
     status: 'confirmed',
+    tailor_confirmed: true,
     created_at: '2026-06-24T17:50:00Z',
   },
   {
@@ -327,6 +333,7 @@ export const mockOrders: Order[] = [
     order_type: 'collection',
     collection_id: 'col-002',
     status: 'ready',
+    tailor_confirmed: true,
     created_at: '2026-06-21T08:20:00Z',
   },
   {
@@ -339,6 +346,7 @@ export const mockOrders: Order[] = [
     order_type: 'bespoke',
     collection_id: null,
     status: 'confirmed',
+    tailor_confirmed: true,
     created_at: '2026-06-19T12:45:00Z',
   },
 ]

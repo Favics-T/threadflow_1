@@ -58,13 +58,14 @@ export interface AssignmentSuggestion {
 }
 
 /**
- * Pure matching function — no IO. Suggests a tailor for every unassigned
- * (status === 'confirmed') order, closest deadline first. Orders with no
- * available tailor are simply omitted from the result.
+ * Pure matching function — no IO. Suggests a tailor for every confirmed and
+ * tailor-confirmed but unassigned order, closest deadline first. Orders still
+ * awaiting tailor confirmation are not eligible yet. Orders with no available
+ * tailor are simply omitted from the result.
  */
 export function assignTailorsToOrders(orders: Order[], tailors: Tailor[]): AssignmentSuggestion[] {
   const unassigned = orders
-    .filter((order) => order.status === 'confirmed')
+    .filter((order) => order.status === 'confirmed' && order.tailor_confirmed)
     .slice()
     .sort((a, b) => daysUntil(a.deadline) - daysUntil(b.deadline))
 

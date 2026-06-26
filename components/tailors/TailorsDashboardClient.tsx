@@ -33,7 +33,7 @@ export function TailorsDashboardClient({
 
   const liveTailors = withLiveTailorLoad(tailors, orders)
   const atRiskOrders = getAtRiskOrders(orders)
-  const unassignedOrders = orders.filter((o) => o.status === 'confirmed')
+  const unassignedOrders = orders.filter((o) => o.status === 'confirmed' && o.tailor_confirmed)
 
   function applyAssignment(assignment: CreatedAssignment) {
     const tailor = tailors.find((t) => t.id === assignment.tailor_id)

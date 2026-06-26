@@ -146,6 +146,7 @@ export async function createOrder(input: {
       order_type: input.orderType,
       status: input.status ?? 'confirmed',
       collection_id: input.collectionId ?? null,
+      tailor_confirmed: false,
     })
     .select()
     .single()

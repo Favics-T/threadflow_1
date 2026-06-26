@@ -1,14 +1,16 @@
 'use client'
 
-import { useState } from 'react'
+import { useState, useTransition } from 'react'
 import { useRouter } from 'next/navigation'
 import { OrderCard } from './OrderCard'
 import { OrderDetailDrawer } from './OrderDetailDrawer'
+import { Toast } from '@/components/ui/Toast'
+import { confirmOrder } from '@/app/orders/actions'
 import type { OrderStatus } from '@/types/threadflow'
 import type { BoardOrder } from '@/lib/supabase/orders'
 
 const COLUMNS: { key: OrderStatus; label: string; description: string }[] = [
-  { key: 'confirmed', label: 'Confirmed', description: 'Not yet assigned to a tailor.' },
+  { key: 'confirmed', label: 'Confirmed', description: 'Awaiting tailor confirmation or assignment.' },
   { key: 'in_production', label: 'In Production', description: 'Assigned to a tailor and underway.' },
   { key: 'ready', label: 'Ready', description: 'Completed, 3+ days ahead of deadline.' },
   { key: 'delivered', label: 'Delivered', description: 'Handed off to the client.' },
@@ -29,8 +31,30 @@ export function OrdersBoardClient({
   usingMockData: boolean
 }) {
   const router = useRouter()
-  const [orders] = useState<BoardOrder[]>(initialOrders)
+  const [orders, setOrders] = useState<BoardOrder[]>(initialOrders)
   const [selectedId, setSelectedId] = useState<string | null>(null)
+  const [confirmingId, setConfirmingId] = useState<string | null>(null)
+  const [toast, setToast] = useState<{ message: string; variant: 'success' | 'error' } | null>(null)
+  const [, startTransition] = useTransition()
+
+  function showToast(message: string, variant: 'success' | 'error' = 'success') {
+    setToast({ message, variant })
+    setTimeout(() => setToast(null), 3500)
+  }
+
+  function handleConfirm(orderId: string, clientName: string) {
+    setConfirmingId(orderId)
+    startTransition(async () => {
+      const result = await confirmOrder(orderId)
+      setConfirmingId(null)
+      if (result.error) {
+        showToast(result.error, 'error')
+        return
+      }
+      setOrders((prev) => prev.map((o) => (o.id === orderId ? { ...o, tailor_confirmed: true } : o)))
+      showToast(`${clientName}'s order confirmed — ready for tailor assignment.`)
+    })
+  }
 
   const selectedOrder = orders.find((o) => o.id === selectedId) ?? null
 
@@ -96,8 +120,12 @@ export function OrdersBoardClient({
           order={selectedOrder}
           onClose={() => setSelectedId(null)}
           onAssignRequested={() => router.push('/tailors')}
+          onConfirmRequested={() => handleConfirm(selectedOrder.id, selectedOrder.client_name)}
+          isConfirming={confirmingId === selectedOrder.id}
         />
       )}
+
+      {toast && <Toast message={toast.message} variant={toast.variant} />}
     </main>
   )
 }

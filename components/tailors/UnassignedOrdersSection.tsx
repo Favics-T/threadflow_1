@@ -31,7 +31,7 @@ export function UnassignedOrdersSection({
       {orders.length === 0 ? (
         <div className="border border-outline-variant bg-surface-container-lowest px-6 py-8 text-center">
           <p className="text-body-sm font-body-sm text-on-surface-variant">
-            No unassigned orders — every confirmed order has a tailor.
+            No orders ready for assignment — confirm pending orders on the Orders board, or every confirmed order already has a tailor.
           </p>
         </div>
       ) : (

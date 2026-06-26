@@ -17,10 +17,14 @@ export function OrderDetailDrawer({
   order,
   onClose,
   onAssignRequested,
+  onConfirmRequested,
+  isConfirming,
 }: {
   order: BoardOrder
   onClose: () => void
   onAssignRequested: () => void
+  onConfirmRequested: () => void
+  isConfirming: boolean
 }) {
   return (
     <div
@@ -131,6 +135,25 @@ export function OrderDetailDrawer({
                       {order.assignment.approvedByTailor ? 'APPROVED BY TAILOR' : 'AWAITING TAILOR APPROVAL'}
                     </span>
                   </div>
+                </div>
+              ) : !order.tailor_confirmed ? (
+                <div className="flex items-center justify-between gap-3 flex-wrap">
+                  <div>
+                    <span className="text-label-caps font-label-caps px-2 py-0.5 bg-warning/10 text-warning">
+                      NEEDS CONFIRMATION
+                    </span>
+                    <p className="text-body-sm font-body-sm text-on-surface-variant mt-2">
+                      Confirm this order before it can be sent to the assignment engine.
+                    </p>
+                  </div>
+                  <button
+                    onClick={onConfirmRequested}
+                    disabled={isConfirming}
+                    className="flex items-center gap-1.5 bg-primary text-on-primary px-4 py-2 text-label-caps font-label-caps tracking-widest hover:opacity-90 transition-opacity disabled:opacity-50 shrink-0"
+                  >
+                    <span className="material-symbols-outlined text-sm">task_alt</span>
+                    {isConfirming ? 'CONFIRMING…' : 'CONFIRM ORDER'}
+                  </button>
                 </div>
               ) : (
                 <div className="flex items-center justify-between gap-3 flex-wrap">

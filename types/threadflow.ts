@@ -28,6 +28,7 @@ export interface Order {
   deadline: string
   order_type: OrderType
   status: OrderStatus
+  tailor_confirmed: boolean
   created_at: string
 }
 
