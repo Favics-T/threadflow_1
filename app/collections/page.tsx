@@ -10,25 +10,34 @@ export const metadata: Metadata = {
 }
 
 export default async function CollectionsPage() {
-  const supabase = createClient()
+  let collections: Collection[] = mockCollections
+  let collectionOrders = getMockOrders().filter((o) => o.order_type === 'collection')
+  let usingMockData = false
 
-  const { data: collectionsData, error: collectionsError } = await supabase
-    .from('collections')
-    .select('*')
-    .order('created_at', { ascending: false })
+  try {
+    const supabase = createClient()
 
-  const collections: Collection[] =
-    !collectionsError && collectionsData ? (collectionsData as Collection[]) : mockCollections
+    const { data: collectionsData, error: collectionsError } = await supabase
+      .from('collections')
+      .select('*')
+      .order('created_at', { ascending: false })
 
-  const { data: ordersData, error: ordersError } = await getOrders()
-  const orders = !ordersError && ordersData ? ordersData : getMockOrders()
-  const collectionOrders = orders.filter((o) => o.order_type === 'collection')
+    collections = !collectionsError && collectionsData ? (collectionsData as Collection[]) : mockCollections
+
+    const { data: ordersData, error: ordersError } = await getOrders()
+    const orders = !ordersError && ordersData ? ordersData : getMockOrders()
+    collectionOrders = orders.filter((o) => o.order_type === 'collection')
+
+    usingMockData = Boolean(collectionsError) || Boolean(ordersError)
+  } catch {
+    usingMockData = true
+  }
 
   return (
     <CollectionsClient
       initialCollections={collections}
       collectionOrders={collectionOrders}
-      usingMockData={Boolean(collectionsError) || Boolean(ordersError)}
+      usingMockData={usingMockData}
     />
   )
 }

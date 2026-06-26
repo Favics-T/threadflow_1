@@ -9,27 +9,35 @@ export const metadata: Metadata = {
 }
 
 export default async function InboxPage() {
-  const supabase = createClient()
+  let messages: Message[] = mockMessages
+  let collections: Collection[] = mockCollections
+  let usingMockData = false
 
-  const { data, error } = await supabase
-    .from('messages')
-    .select('*')
-    .order('created_at', { ascending: false })
+  try {
+    const supabase = createClient()
 
-  const { data: collectionsData, error: collectionsError } = await supabase
-    .from('collections')
-    .select('*')
-    .order('created_at', { ascending: false })
+    const { data, error } = await supabase
+      .from('messages')
+      .select('*')
+      .order('created_at', { ascending: false })
 
-  const messages: Message[] = !error && data ? (data as Message[]) : mockMessages
-  const collections: Collection[] =
-    !collectionsError && collectionsData ? (collectionsData as Collection[]) : mockCollections
+    const { data: collectionsData, error: collectionsError } = await supabase
+      .from('collections')
+      .select('*')
+      .order('created_at', { ascending: false })
+
+    messages = !error && data ? (data as Message[]) : mockMessages
+    collections = !collectionsError && collectionsData ? (collectionsData as Collection[]) : mockCollections
+    usingMockData = Boolean(error) || Boolean(collectionsError)
+  } catch {
+    usingMockData = true
+  }
 
   return (
     <InboxClient
       initialMessages={messages}
       collections={collections}
-      usingMockData={Boolean(error) || Boolean(collectionsError)}
+      usingMockData={usingMockData}
     />
   )
 }

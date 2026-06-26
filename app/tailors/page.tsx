@@ -10,23 +10,33 @@ export const metadata: Metadata = {
 }
 
 export default async function TailorsPage() {
-  const supabase = createClient()
+  let tailors: Tailor[] = mockTailors
+  let orders = getMockOrders()
+  let usingMockData = false
 
-  const { data: tailorsData, error: tailorsError } = await supabase
-    .from('tailors')
-    .select('id, name, specialty, current_load, is_available')
-    .order('name', { ascending: true })
+  try {
+    const supabase = createClient()
 
-  const tailors: Tailor[] = !tailorsError && tailorsData ? (tailorsData as Tailor[]) : mockTailors
+    const { data: tailorsData, error: tailorsError } = await supabase
+      .from('tailors')
+      .select('id, name, specialty, current_load, is_available')
+      .order('name', { ascending: true })
 
-  const { data: ordersData, error: ordersError } = await getOrders()
-  const orders = !ordersError && ordersData ? ordersData : getMockOrders()
+    tailors = !tailorsError && tailorsData ? (tailorsData as Tailor[]) : mockTailors
+
+    const { data: ordersData, error: ordersError } = await getOrders()
+    orders = !ordersError && ordersData ? ordersData : getMockOrders()
+
+    usingMockData = Boolean(tailorsError) || Boolean(ordersError)
+  } catch {
+    usingMockData = true
+  }
 
   return (
     <TailorsDashboardClient
       initialTailors={tailors}
       initialOrders={orders}
-      usingMockData={Boolean(tailorsError) || Boolean(ordersError)}
+      usingMockData={usingMockData}
     />
   )
 }

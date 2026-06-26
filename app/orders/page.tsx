@@ -7,8 +7,16 @@ export const metadata: Metadata = {
 }
 
 export default async function OrdersPage() {
-  const { data, error } = await getOrders()
-  const orders = !error && data ? data : getMockOrders()
+  let orders = getMockOrders()
+  let usingMockData = false
 
-  return <OrdersBoardClient initialOrders={orders} usingMockData={Boolean(error)} />
+  try {
+    const { data, error } = await getOrders()
+    orders = !error && data ? data : getMockOrders()
+    usingMockData = Boolean(error)
+  } catch {
+    usingMockData = true
+  }
+
+  return <OrdersBoardClient initialOrders={orders} usingMockData={usingMockData} />
 }

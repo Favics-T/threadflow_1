@@ -28,6 +28,8 @@ export function MessageDetailModal({
   const [isPending, startTransition] = useTransition()
 
   const [order, setOrder] = useState<BoardOrder | null>(null)
+  const [orderLoading, setOrderLoading] = useState(false)
+  const [orderLoadError, setOrderLoadError] = useState<string | null>(null)
   const [suggestion, setSuggestion] = useState<AssignmentSuggestion | null>(null)
   const [isApproving, startApproving] = useTransition()
   const [isAssigning, startAssigning] = useTransition()
@@ -35,9 +37,23 @@ export function MessageDetailModal({
   useEffect(() => {
     if (message.status !== 'pending_approval' && message.status !== 'finalized') return
 
-    getOrderForMessage(message.id).then(({ order }) => {
-      setOrder(order)
-    })
+    setOrderLoading(true)
+    setOrderLoadError(null)
+
+    const load = async () => {
+      try {
+        const { order, error } = await getOrderForMessage(message.id)
+        setOrder(order)
+        if (error) setOrderLoadError(typeof error === 'string' ? error : 'Could not load this order.')
+      } catch (err) {
+        // Server action may throw when Supabase isn't connected (e.g. demo/mock data)
+        setOrderLoadError(null) // treat as "no real order" rather than hard error
+      } finally {
+        setOrderLoading(false)
+      }
+    }
+
+    load()
   }, [message.id, message.status])
 
   async function handleGenerateDraft() {
@@ -240,22 +256,45 @@ export function MessageDetailModal({
                 </span>
               </div>
               <div className="px-4 py-4 flex flex-col gap-3">
-                {order && (
-                  <p className="text-body-sm font-body-sm text-on-surface-variant">
-                    {order.cloth_type} — due {new Date(order.deadline).toLocaleDateString('en-US', { month: 'short', day: 'numeric' })}
-                  </p>
+                {orderLoading && (
+                  <p className="text-body-sm font-body-sm text-on-surface-variant">Loading draft order…</p>
                 )}
-                <p className="text-body-sm font-body-sm text-on-surface-variant">
-                  This was submitted from the conversation but is not a real order until the tailor confirms it.
-                </p>
-                <button
-                  onClick={handleApproveOrder}
-                  disabled={isApproving || !order}
-                  className="w-full flex items-center justify-center gap-2 bg-primary text-on-primary py-3 text-label-caps font-label-caps tracking-widest hover:opacity-90 transition-opacity disabled:opacity-50"
-                >
-                  <span className="material-symbols-outlined text-sm">task_alt</span>
-                  {isApproving ? 'APPROVING…' : 'APPROVE AS ORDER'}
-                </button>
+
+                {!orderLoading && (
+                  <>
+                    {order ? (
+                      <p className="text-body-sm font-body-sm text-on-surface-variant">
+                        {order.cloth_type} — due {new Date(order.deadline).toLocaleDateString('en-US', { month: 'short', day: 'numeric' })}
+                      </p>
+                    ) : (
+                      <p className="text-body-sm font-body-sm text-on-surface-variant">
+                        Review this drafted order and confirm it's ready for production.
+                      </p>
+                    )}
+
+                    <p className="text-body-sm font-body-sm text-on-surface-variant">
+                      Approving this order will let the AI agent suggest the best tailor to assign based on specialty and current workload.
+                    </p>
+
+                    {orderLoadError && (
+                      <div className="flex items-start gap-2 bg-error-container/30 p-3">
+                        <span className="material-symbols-outlined text-sm text-on-error-container mt-0.5">error</span>
+                        <p className="text-body-sm font-body-sm text-on-error-container">
+                          {orderLoadError}
+                        </p>
+                      </div>
+                    )}
+
+                    <button
+                      onClick={handleApproveOrder}
+                      disabled={isApproving}
+                      className="w-full flex items-center justify-center gap-2 bg-primary text-on-primary py-3 text-label-caps font-label-caps tracking-widest hover:opacity-90 transition-opacity disabled:opacity-50"
+                    >
+                      <span className="material-symbols-outlined text-sm">smart_toy</span>
+                      {isApproving ? 'APPROVING…' : 'APPROVE FOR AI AGENT'}
+                    </button>
+                  </>
+                )}
               </div>
             </div>
           )}

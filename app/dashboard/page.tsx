@@ -10,24 +10,33 @@ type TailorLoad = 'low' | 'medium' | 'high'
 
 // Data fetching 
 async function getDashboardStats() {
-  const supabase = createClient()
+  let orders: any[] = []
+  let fabrics: any[] = []
+  let tailors: any[] = []
+  let activity: any[] = []
 
-  const [ordersRes, fabricRes, tailorsRes, activityRes] = await Promise.all([
-    supabase.from('orders').select(`
-      id, status, delivery_estimate, created_at, yards_required,
-      clients ( id, name ),
-      tailors ( id, name, current_load_hours ),
-      fabric_inventory ( id, material_name, yards_available )
-    `),
-    supabase.from('fabric_inventory').select('id, material_name, yards_available'),
-    supabase.from('tailors').select('id, name, current_load_hours'),
-    supabase.from('activity_log').select('id, tool_name, output, created_at').order('created_at', { ascending: false }).limit(5),
-  ])
+  try {
+    const supabase = createClient()
 
-  const orders = (ordersRes.data ?? []) as any[]
-  const fabrics = fabricRes.data ?? []
-  const tailors = tailorsRes.data ?? []
-  const activity = activityRes.data ?? []
+    const [ordersRes, fabricRes, tailorsRes, activityRes] = await Promise.all([
+      supabase.from('orders').select(`
+        id, status, delivery_estimate, created_at, yards_required,
+        clients ( id, name ),
+        tailors ( id, name, current_load_hours ),
+        fabric_inventory ( id, material_name, yards_available )
+      `),
+      supabase.from('fabric_inventory').select('id, material_name, yards_available'),
+      supabase.from('tailors').select('id, name, current_load_hours'),
+      supabase.from('activity_log').select('id, tool_name, output, created_at').order('created_at', { ascending: false }).limit(5),
+    ])
+
+    orders = (ordersRes.data ?? []) as any[]
+    fabrics = fabricRes.data ?? []
+    tailors = tailorsRes.data ?? []
+    activity = activityRes.data ?? []
+  } catch {
+    // Supabase unreachable or misconfigured — render with empty/zeroed stats
+  }
 
   const activeOrders = orders.filter((o) => o.status !== 'completed')
   const inProgress = orders.filter((o) => o.status === 'in_progress').length
@@ -185,7 +194,7 @@ export default async function DashboardPage() {
       </header>
 
 
- <MorningBriefWidget />                     
+ {/* <MorningBriefWidget />                      */}
       </div>
       
       {/* Stat cards */}

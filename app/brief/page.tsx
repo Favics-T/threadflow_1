@@ -11,18 +11,26 @@ export const metadata: Metadata = {
 }
 
 export default async function BriefPage() {
-  const supabase = createClient()
+  let messages: Message[] = mockMessages
+  let tailors: Tailor[] = mockTailors
+  let orders = getMockOrders()
 
-  const { data: messagesData, error: messagesError } = await supabase.from('messages').select('*')
-  const messages: Message[] = !messagesError && messagesData ? (messagesData as Message[]) : mockMessages
+  try {
+    const supabase = createClient()
 
-  const { data: tailorsData, error: tailorsError } = await supabase
-    .from('tailors')
-    .select('id, name, specialty, current_load, is_available')
-  const tailors: Tailor[] = !tailorsError && tailorsData ? (tailorsData as Tailor[]) : mockTailors
+    const { data: messagesData, error: messagesError } = await supabase.from('messages').select('*')
+    messages = !messagesError && messagesData ? (messagesData as Message[]) : mockMessages
 
-  const { data: ordersData, error: ordersError } = await getOrders()
-  const orders = !ordersError && ordersData ? ordersData : getMockOrders()
+    const { data: tailorsData, error: tailorsError } = await supabase
+      .from('tailors')
+      .select('id, name, specialty, current_load, is_available')
+    tailors = !tailorsError && tailorsData ? (tailorsData as Tailor[]) : mockTailors
+
+    const { data: ordersData, error: ordersError } = await getOrders()
+    orders = !ordersError && ordersData ? ordersData : getMockOrders()
+  } catch {
+    // Supabase unreachable or misconfigured — keep the mock-data fallback
+  }
 
   const snapshot = buildBriefSnapshot(messages, orders, tailors)
 

@@ -18,38 +18,48 @@ function firstRelation<T>(relation: SupabaseRelation<T>) {
 }
 
 export default async function ClientsPage() {
-  const supabase = createClient()
+  let data: SupabaseClientRow[] | null = null
+  let errorMessage: string | null = null
 
-  const { data, error } = await supabase
-    .from('clients')
-    .select(`
-      id,
-      name,
-      phone,
-      measurements,
-      created_at,
-      orders (
+  try {
+    const supabase = createClient()
+
+    const { data: rows, error } = await supabase
+      .from('clients')
+      .select(`
         id,
-        status,
-        yards_required,
-        delivery_estimate,
+        name,
+        phone,
+        measurements,
         created_at,
-        garment_type,
-        image_url,
-        notes,
-        fabric_inventory (
-          material_name,
-          yards_available
-        ),
-        tailors (
-          name,
-          current_load_hours
+        orders (
+          id,
+          status,
+          yards_required,
+          delivery_estimate,
+          created_at,
+          garment_type,
+          image_url,
+          notes,
+          fabric_inventory (
+            material_name,
+            yards_available
+          ),
+          tailors (
+            name,
+            current_load_hours
+          )
         )
-      )
-    `)
-    .order('created_at', { ascending: false })
+      `)
+      .order('created_at', { ascending: false })
 
-  const clients = ((data ?? []) as unknown as SupabaseClientRow[]).map((client) => ({
+    data = rows as unknown as SupabaseClientRow[] | null
+    errorMessage = error?.message ?? null
+  } catch (err) {
+    errorMessage = err instanceof Error ? err.message : 'Failed to load clients'
+  }
+
+  const clients = ((data ?? []) as SupabaseClientRow[]).map((client) => ({
     ...client,
     orders: (client.orders ?? []).map((order) => ({
       ...order,
@@ -58,5 +68,5 @@ export default async function ClientsPage() {
     })),
   }))
 
-  return <ClientsUI clients={clients} error={error?.message ?? null} />
+  return <ClientsUI clients={clients} error={errorMessage} />
 }

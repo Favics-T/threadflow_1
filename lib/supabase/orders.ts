@@ -122,23 +122,27 @@ export async function getOrderById(id: string): Promise<{ data: BoardOrder | nul
 }
 
 export async function getOrderByMessageId(messageId: string): Promise<{ data: BoardOrder | null; error: string | null }> {
-  const supabase = createClient()
+  try {
+    const supabase = createClient()
 
-  const { data, error } = await supabase
-    .from('orders')
-    .select(ORDER_SELECT)
-    .eq('message_id', messageId)
-    .maybeSingle()
+    const { data, error } = await supabase
+      .from('orders')
+      .select(ORDER_SELECT)
+      .eq('message_id', messageId)
+      .maybeSingle()
 
-  if (error) {
-    return { data: null, error: error.message }
+    if (error) {
+      return { data: null, error: error.message }
+    }
+
+    if (!data) {
+      return { data: null, error: null }
+    }
+
+    return { data: normalizeOrder(data as unknown as OrderRow), error: null }
+  } catch (err) {
+    return { data: null, error: err instanceof Error ? err.message : 'Could not reach Supabase.' }
   }
-
-  if (!data) {
-    return { data: null, error: null }
-  }
-
-  return { data: normalizeOrder(data as unknown as OrderRow), error: null }
 }
 
 export async function updateOrderStatus(id: string, status: OrderStatus): Promise<{ error: string | null }> {

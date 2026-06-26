@@ -17,15 +17,21 @@ export default async function RootLayout({
 }: {
   children: React.ReactNode
 }) {
-  const supabase = createClient()
-  const { count, error } = await supabase
-    .from('messages')
-    .select('*', { count: 'exact', head: true })
-    .eq('status', 'unresponded')
+  let unreadCount = mockMessages.filter((m) => m.status === 'unresponded').length
 
-  const unreadCount = !error && count !== null
-    ? count
-    : mockMessages.filter((m) => m.status === 'unresponded').length
+  try {
+    const supabase = createClient()
+    const { count, error } = await supabase
+      .from('messages')
+      .select('*', { count: 'exact', head: true })
+      .eq('status', 'unresponded')
+
+    if (!error && count !== null) {
+      unreadCount = count
+    }
+  } catch {
+    // Supabase unreachable or misconfigured — keep the mock-data fallback
+  }
 
   return (
     <html lang="en" style={{ colorScheme: 'light' }}>
