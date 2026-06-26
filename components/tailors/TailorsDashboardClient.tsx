@@ -98,12 +98,12 @@ export function TailorsDashboardClient({
 
       <AtRiskBanner orders={atRiskOrders} />
 
-      <UnassignedOrdersSection
+      {/* <UnassignedOrdersSection
         orders={unassignedOrders}
         tailors={liveTailors}
         onAssigned={applyAssignment}
         showToast={showToast}
-      />
+      /> */}
 
       <section>
         <h2 className="text-label-caps font-label-caps text-on-surface-variant uppercase tracking-widest mb-6">
