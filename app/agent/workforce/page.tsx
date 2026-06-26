@@ -1,6 +1,6 @@
 import { createServerClient } from '@/lib/supabase/server'
-import { WorkforceClient } from '@/components/workforce/WorkforceClient'
-import { mockPastAssignments, mockProductionOrders } from '@/lib/mock/conversations'
+import  WorkforceClient  from '@/components/workforce/WorkforceClient'
+import { mockPastAssignments, mockProductionOrders, mockStaff } from '@/lib/mock/conversations'
 
 export const metadata = {
   title: 'Workforce | ThreadFlow AI',
@@ -21,6 +21,7 @@ export default async function WorkforcePage() {
   return (
     <WorkforceClient
       tailors={tailors ?? []}
+    
       pendingAssignment={pendingAssignment}
       pastAssignments={mockPastAssignments}
     />

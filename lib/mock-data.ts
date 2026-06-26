@@ -19,6 +19,7 @@ export const mockMessages: Message[] = [
     ai_draft: null,
     approved_at: null,
     created_at: '2026-06-25T08:12:00Z',
+    cloth_type: 'Aso-Oke Gown',
   },
   {
     id: 'msg-002',
@@ -33,6 +34,7 @@ export const mockMessages: Message[] = [
       'Hi Chinedu, congratulations on the engagement! We would love to put together matching agbada and gown outfits for you both. We have fitting slots open this Thursday and Saturday — which works better?',
     approved_at: null,
     created_at: '2026-06-25T07:40:00Z',
+    cloth_type: 'Agbada & Gown Set',
   },
   {
     id: 'msg-003',
@@ -47,6 +49,7 @@ export const mockMessages: Message[] = [
       'Hi Funmilayo, thank you for reaching out! An emerald lace dinner gown in size 14 typically runs ₦65,000-₦95,000 depending on embellishment. We can have it ready before the first week of July if we start fittings this week. Would you like to schedule one?',
     approved_at: '2026-06-24T14:05:00Z',
     created_at: '2026-06-24T13:50:00Z',
+    cloth_type: 'Lace Dinner Gown',
   },
   {
     id: 'msg-004',
@@ -60,6 +63,7 @@ export const mockMessages: Message[] = [
     ai_draft: null,
     approved_at: null,
     created_at: '2026-06-25T09:02:00Z',
+    cloth_type: 'Ankara Two-Piece',
   },
   {
     id: 'msg-005',
@@ -73,6 +77,7 @@ export const mockMessages: Message[] = [
     ai_draft: null,
     approved_at: null,
     created_at: '2026-06-25T06:55:00Z',
+    cloth_type: 'Agbada',
   },
   {
     id: 'msg-006',
@@ -87,6 +92,7 @@ export const mockMessages: Message[] = [
       'Confirmed, Patience! Your lace blouse and wrapper set is locked in at ₦48,000, delivery on June 30th. We will message you when it is ready for pickup.',
     approved_at: '2026-06-20T10:30:00Z',
     created_at: '2026-06-20T10:15:00Z',
+    cloth_type: 'Lace Blouse & Wrapper Set',
   },
   {
     id: 'msg-007',
@@ -101,6 +107,7 @@ export const mockMessages: Message[] = [
       'Hi Halima, we source authentic handwoven Aso-oke directly from Oyo weavers — no blends. Happy to send fabric swatches before you commit. When is the wedding?',
     approved_at: '2026-06-23T16:20:00Z',
     created_at: '2026-06-23T16:02:00Z',
+    cloth_type: 'Aso-Oke Wedding Set',
   },
   {
     id: 'msg-008',
@@ -114,6 +121,7 @@ export const mockMessages: Message[] = [
     ai_draft: null,
     approved_at: null,
     created_at: '2026-06-25T05:48:00Z',
+    cloth_type: 'Dinner Gowns (x3)',
   },
   {
     id: 'msg-009',
@@ -128,6 +136,7 @@ export const mockMessages: Message[] = [
       'Hi Grace, a navy guinea agbada with gold embroidery is very doable within 2 weeks. We will need your father’s measurements to get started — do you have them on hand?',
     approved_at: null,
     created_at: '2026-06-24T19:30:00Z',
+    cloth_type: 'Agbada',
   },
   {
     id: 'msg-010',
@@ -141,6 +150,7 @@ export const mockMessages: Message[] = [
     ai_draft: null,
     approved_at: '2026-06-22T11:10:00Z',
     created_at: '2026-06-22T11:00:00Z',
+    cloth_type: 'Lace Gown',
   },
   {
     id: 'msg-011',
@@ -154,6 +164,7 @@ export const mockMessages: Message[] = [
     ai_draft: null,
     approved_at: null,
     created_at: '2026-06-25T07:05:00Z',
+    cloth_type: 'Shirt',
   },
   {
     id: 'msg-012',
@@ -168,6 +179,7 @@ export const mockMessages: Message[] = [
       'Hi Ngozi, an Ankara kaftan in size 16 within 10 days is achievable. Pricing depends on fabric choice — would you like to come in to pick a print, or should we suggest a few?',
     approved_at: '2026-06-24T09:15:00Z',
     created_at: '2026-06-24T08:58:00Z',
+    cloth_type: 'Ankara Kaftan',
   },
   {
     id: 'msg-013',
@@ -182,6 +194,7 @@ export const mockMessages: Message[] = [
       'Hi Folake, a dusty rose lace dinner gown, knee length with long sleeves, sounds beautiful and is very achievable. Do you have an event date in mind so we can confirm timeline?',
     approved_at: null,
     created_at: '2026-06-25T10:20:00Z',
+    cloth_type: 'Lace Dinner Gown',
   },
   {
     id: 'msg-014',
@@ -196,6 +209,7 @@ export const mockMessages: Message[] = [
       'Confirmed, Yusuf — ₦120,000 for the full agbada set with cap, delivery before July 10th. Send the deposit whenever you are ready and we will get the cutting scheduled.',
     approved_at: '2026-06-24T17:45:00Z',
     created_at: '2026-06-24T17:30:00Z',
+    cloth_type: 'Agbada Set',
   },
   {
     id: 'msg-015',
@@ -210,6 +224,7 @@ export const mockMessages: Message[] = [
       'All set, Comfort! Both Ankara dinner gowns are booked, deposit received, balance due on pickup July 16th.',
     approved_at: '2026-06-19T12:40:00Z',
     created_at: '2026-06-19T12:25:00Z',
+    cloth_type: 'Ankara Dinner Gown',
   },
 ]
 

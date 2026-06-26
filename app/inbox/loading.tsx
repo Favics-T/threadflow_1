@@ -8,14 +8,18 @@ export default function Loading() {
         <Skeleton className="h-9 w-32 mb-3" />
         <Skeleton className="h-5 w-96" />
       </div>
-      <div className="flex items-center gap-2 mb-8 border-b border-outline-variant pb-3">
-        <Skeleton className="h-9 w-40" />
-        <Skeleton className="h-9 w-32" />
-        <Skeleton className="h-9 w-28" />
+      <div className="flex items-center justify-between gap-4 mb-6">
+        <div className="flex items-center gap-2">
+          <Skeleton className="h-9 w-16" />
+          <Skeleton className="h-9 w-36" />
+          <Skeleton className="h-9 w-28" />
+          <Skeleton className="h-9 w-28" />
+        </div>
+        <Skeleton className="h-9 w-64" />
       </div>
-      <div className="flex flex-col gap-3">
-        {Array.from({ length: 4 }).map((_, i) => (
-          <Skeleton key={i} className="h-28 w-full" />
+      <div className="flex flex-col gap-px border border-outline-variant">
+        {Array.from({ length: 6 }).map((_, i) => (
+          <Skeleton key={i} className="h-14 w-full" />
         ))}
       </div>
     </main>

@@ -26,7 +26,7 @@ export function ClientsUI({ clients, error }: ClientsUIProps) {
   )
 
   return (
-    <section className="px-10 py-10 pb-16">
+    <section className="px-10 py-10 pb-16 bg-white">
       <header className="mb-10 flex items-end justify-between">
         <div>
           <span className="text-label-caps font-label-caps uppercase tracking-widest text-on-surface-variant">
@@ -56,7 +56,7 @@ export function ClientsUI({ clients, error }: ClientsUIProps) {
         </div>
       ) : null}
 
-      <div className="grid min-h-[680px] grid-cols-[360px_minmax(0,1fr)] border border-outline-variant bg-surface-container-lowest">
+      <div className="grid min-h-170 grid-cols-[360px_minmax(0,1fr)] border border-outline-variant bg-surface-container-lowest">
         <ClientList
           clients={clients}
           selectedClientId={selectedClient?.id ?? ''}

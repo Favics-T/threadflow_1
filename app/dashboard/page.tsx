@@ -4,11 +4,11 @@ import { MorningBriefWidget } from '@/components/dashboard/MorningBriefWidget'
 import { createClient } from '@/lib/supabase/server'
 import { ConciergeBell, Shirt, CirclePile, MessageSquareDot, ArrowRight, GlobeCheck } from 'lucide-react'
 
-// ── Types ───────────────────────────────────────────────────────────────────
+//  Types 
 type OrderStatus = 'in_progress' | 'pending' | 'blocked' | 'completed'
 type TailorLoad = 'low' | 'medium' | 'high'
 
-// ── Data fetching ────────────────────────────────────────────────────────────
+// Data fetching 
 async function getDashboardStats() {
   const supabase = createClient()
 
@@ -127,14 +127,13 @@ function relativeTime(ts: string): string {
   return `${Math.floor(diff / 86400)}d ago`
 }
 
-// ── Fallback seed activity (shown when activity_log is empty) ────────────────
 const seedActivity = [
   { id: 's1', icon: 'check_circle',  text: 'Delivery estimate calculated for Adaeze',  time: '2 min ago',  color: 'text-tertiary' },
   { id: 's2', icon: 'warning',       text: 'Fabric shortage flagged — Silk Charmeuse', time: '5 min ago',  color: 'text-error'   },
   { id: 's3', icon: 'edit_note',     text: 'Client reply drafted for Adaeze',          time: '6 min ago',  color: 'text-primary' },
 ]
 
-// ── Page ─────────────────────────────────────────────────────────────────────
+
 export default async function DashboardPage() {
   const stats = await getDashboardStats()
 
@@ -145,7 +144,6 @@ export default async function DashboardPage() {
     year: 'numeric',
   })
 
-  // Orders already have nested join objects from the query
   const displayOrders = stats.orders
     .filter((o: any) => o.status !== 'completed')
     .slice(0, 5)
@@ -168,9 +166,10 @@ export default async function DashboardPage() {
       : seedActivity
 
   return (
-    <main className="px-10 py-10 pb-16">
+    <main className="px-10 py-10 pb-16  w-full ">
 
       {/* Header */}
+      <div className='flex justify-between'>
       <header className="flex justify-between items-end mb-12">
         <div>
           <span className="text-label-caps font-label-caps text-on-surface-variant uppercase tracking-widest">
@@ -185,8 +184,10 @@ export default async function DashboardPage() {
         </div>
       </header>
 
-      <MorningBriefWidget />
 
+ <MorningBriefWidget />                     
+      </div>
+      
       {/* Stat cards */}
       <section className="grid grid-cols-2 md:grid-cols-4 gap-4 mb-12">
         <StatCard

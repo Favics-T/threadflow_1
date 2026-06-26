@@ -4,9 +4,12 @@ import type {
   DoneConversation,
   ProductionOrder,
   TailorAssignment,
+  StaffMember,
+  AgentAssignmentStatus,
+  AgentAssignment
 } from '@/lib/types/conversations'
 
-// ── Stage 1: No Response ──────────────────────────────────────────────────────
+// Stage 1: No Response 
 export const mockNoResponseMessages: NoResponseMessage[] = [
   {
     id: 'conv-nr-001',
@@ -46,7 +49,7 @@ export const mockNoResponseMessages: NoResponseMessage[] = [
   },
 ]
 
-// ── Stage 2: Pending ──────────────────────────────────────────────────────────
+// Stage 2: Pending 
 export const mockPendingConversations: PendingConversation[] = [
   {
     id: 'conv-p-001',
@@ -259,5 +262,133 @@ export const mockPastAssignments: TailorAssignment[] = [
     approvedByOwner: true,
     assignedAt: 'Apr 10, 2026',
     completedAt: 'Apr 22, 2026',
+  },
+]
+
+export const mockAgentAssignments: AgentAssignment[] = [
+  {
+    id: 'agent-001',
+
+    orderId: 'ord-004',
+
+    clientName: 'Tunde Ajayi',
+
+    garmentDescription:
+      'Agbada Set (3-piece) — white & gold embroidery, size XL',
+
+    tailorId: 't-1',
+
+    tailorName: 'Emeka Osei',
+
+    agreedDeliveryDate: 'Jul 18, 2026',
+
+    expectedFinishDate: 'Jul 13, 2026',
+
+    reasoning: [
+      'Has completed 14 agbada projects successfully',
+      'Current workload is below team average',
+      'Can finish 5 days before delivery deadline',
+      'Previous customer rating: 4.9/5',
+    ],
+
+    status: 'pending_tailor_approval',
+
+    suggestedAt: '15 mins ago',
+  },
+
+  {
+    id: 'agent-002',
+
+    orderId: 'ord-005',
+
+    clientName: 'Miriam Okafor',
+
+    garmentDescription:
+      'Bridesmaids Dress x4 — dusty rose, sizes 10/12/14/16',
+
+    tailorId: 't-2',
+
+    tailorName: 'Amaka Eze',
+
+    agreedDeliveryDate: 'Aug 2, 2026',
+
+    expectedFinishDate: 'Jul 28, 2026',
+
+    reasoning: [
+      'Specialises in bridal and group outfits',
+      'Successfully completed 8 bridesmaid orders',
+      'Available production capacity this week',
+      'Strong on-time delivery history',
+    ],
+
+    status: 'approved',
+
+    suggestedAt: 'Yesterday, 2:14 PM',
+  },
+] 
+
+export const mockStaff: StaffMember[] = [
+  {
+    id: 't-1',
+
+    name: 'Emeka Osei',
+
+    role: 'Senior Tailor',
+
+    joinedAt: '12 Jan 2025',
+
+    status: 'active',
+
+    currentLoadHours: 12,
+
+    currentOrders: [
+      {
+        orderId: 'ord-001',
+        clientName: 'Kelechi Uba',
+        garment: 'Ankara Maxi Dress',
+        dueDate: 'Jul 5, 2026',
+      },
+      {
+        orderId: 'ord-004',
+        clientName: 'Tunde Ajayi',
+        garment: 'Agbada Set',
+        dueDate: 'Jul 18, 2026',
+      },
+    ],
+
+    completedOrders: 48,
+
+    avgCompletionDays: 6,
+
+    onTimeRate: 97,
+  },
+
+  {
+    id: 't-2',
+
+    name: 'Amaka Eze',
+
+    role: 'Bridal Specialist',
+
+    joinedAt: '20 Mar 2025',
+
+    status: 'active',
+
+    currentLoadHours: 7,
+
+    currentOrders: [
+      {
+        orderId: 'ord-002',
+        clientName: 'Sade Ogundimu',
+        garment: 'Lace Evening Gown',
+        dueDate: 'Jul 10, 2026',
+      },
+    ],
+
+    completedOrders: 34,
+
+    avgCompletionDays: 5,
+
+    onTimeRate: 99,
   },
 ]

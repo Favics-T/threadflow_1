@@ -1,7 +1,40 @@
-// ── Conversation Pipeline Types ──────────────────────────────────────────────
 
 export type ConversationPlatform = 'instagram' | 'whatsapp' | 'website' | 'facebook'
 export type ConversationPriority = 'high' | 'normal' | 'low'
+
+
+export type StaffStatus = 'active' | 'inactive'
+
+export interface StaffCurrentOrder {
+  orderId: string
+  clientName: string
+  garment: string
+  dueDate: string
+}
+
+export interface StaffMember {
+  id: string
+
+  name: string
+  role: string
+
+  joinedAt: string
+
+  status: StaffStatus
+
+  currentLoadHours: number
+
+  currentOrders: StaffCurrentOrder[]
+
+  completedOrders: number
+
+  avgCompletionDays: number
+
+  onTimeRate: number
+}
+
+
+
 
 export type ProductionStatus =
   | 'pending_confirmation' // tailor hasn't confirmed yet
@@ -12,7 +45,7 @@ export type ProductionStatus =
   | 'ready_for_delivery'
   | 'delivered'
 
-// ── Inbox Stage 1: No Response ────────────────────────────────────────────────
+
 export interface NoResponseMessage {
   id: string
   clientName: string
@@ -22,8 +55,6 @@ export interface NoResponseMessage {
   priority: ConversationPriority
 }
 
-// ── Inbox Stage 2: Pending ────────────────────────────────────────────────────
-// Conversation active but delivery date not yet confirmed
 export interface PendingConversation {
   id: string
   clientName: string
@@ -34,8 +65,6 @@ export interface PendingConversation {
   lastMessageAt: string
 }
 
-// ── Inbox Stage 3: Done ───────────────────────────────────────────────────────
-// Conversation concluded — delivery date confirmed — pushes to Orders
 export interface DoneConversation {
   id: string
   clientName: string
@@ -46,7 +75,6 @@ export interface DoneConversation {
   pushedToOrders: boolean
 }
 
-// ── Orders Page ───────────────────────────────────────────────────────────────
 export interface ProductionOrder {
   id: string
   clientName: string
@@ -79,4 +107,30 @@ export interface DraftResult {
   delivery_estimate: string
   estimate_status: 'on_track' | 'at_risk' | 'blocked'
   reasoning: string[]
+}
+
+export type AgentAssignmentStatus =
+  | 'pending_tailor_approval'
+  | 'approved'
+  | 'rejected'
+
+export interface AgentAssignment {
+  id: string
+
+  orderId: string
+
+  clientName: string
+  garmentDescription: string
+
+  tailorId: string
+  tailorName: string
+
+  agreedDeliveryDate: string
+  expectedFinishDate: string
+
+  reasoning: string[]
+
+  status: AgentAssignmentStatus
+
+  suggestedAt: string
 }

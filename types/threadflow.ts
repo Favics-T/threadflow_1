@@ -13,6 +13,7 @@ export interface Message {
   ai_draft: string | null
   approved_at: string | null
   created_at: string
+  cloth_type?: string
 }
 
 export type OrderType = 'bespoke' | 'collection'

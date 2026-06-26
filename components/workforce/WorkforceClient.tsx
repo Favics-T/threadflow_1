@@ -1,8 +1,7 @@
 'use client'
 
 import { useState } from 'react'
-import Link from 'next/link'
-import type { ProductionOrder, TailorAssignment } from '@/lib/types/conversations'
+import type { ProductionOrder, StaffMember, TailorAssignment } from '@/lib/types/conversations'
 
 type Tailor = {
   id: string
@@ -14,6 +13,7 @@ type Props = {
   tailors: Tailor[]
   pendingAssignment: ProductionOrder[]
   pastAssignments: TailorAssignment[]
+  // initialStaff: StaffMember[]
 }
 
 function loadStatus(hours: number) {
@@ -22,7 +22,7 @@ function loadStatus(hours: number) {
   return               { label: 'HIGH LOAD',  dot: 'bg-red-500',    bar: 'bg-red-500',    badge: 'bg-error-container text-on-error-container' }
 }
 
-// Suggest the tailor with lowest load
+
 function suggestTailor(tailors: Tailor[]): Tailor | null {
   const available = tailors.filter((t) => (t.current_load_hours ?? 0) <= 15)
   if (!available.length) return null
@@ -31,7 +31,7 @@ function suggestTailor(tailors: Tailor[]): Tailor | null {
   )
 }
 
-export function WorkforceClient({ tailors, pendingAssignment, pastAssignments }: Props) {
+export default function WorkforceClient({ tailors, pendingAssignment, pastAssignments }: Props) {
   const [assignments, setAssignments] = useState<
     Record<string, { tailorId: string; tailorName: string; approved: boolean; pending: boolean }>
   >({})

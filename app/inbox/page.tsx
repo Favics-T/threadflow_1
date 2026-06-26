@@ -25,11 +25,5 @@ export default async function InboxPage() {
   const collections: Collection[] =
     !collectionsError && collectionsData ? (collectionsData as Collection[]) : mockCollections
 
-  return (
-    <InboxClient
-      initialMessages={messages}
-      collections={collections}
-      usingMockData={Boolean(error)}
-    />
-  )
+  return <InboxClient initialMessages={messages} collections={collections} />
 }

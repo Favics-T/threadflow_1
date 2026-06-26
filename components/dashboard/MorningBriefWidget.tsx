@@ -43,7 +43,7 @@ export function MorningBriefWidget() {
   }
 
   return (
-    <div className="border border-outline-variant bg-surface-container-lowest mb-10">
+    <div className="w-64 bg-surface-container-lowest mb-10">
 
       {/* Header row */}
       <div className="flex items-center justify-between px-6 py-5 border-b border-outline-variant bg-surface-container-low">
@@ -61,7 +61,7 @@ export function MorningBriefWidget() {
           <button
             onClick={() => setShowPicker((v) => !v)}
             disabled={loading}
-            className="flex items-center gap-2 bg-primary text-on-primary px-6 py-2.5 text-label-caps font-label-caps tracking-widest hover:opacity-90 transition-opacity disabled:opacity-50"
+            className="flex items-center rounded gap-2 bg-primary text-on-primary px-2 py-2.5 text-label-caps font-label-caps tracking-widest hover:opacity-90 transition-opacity disabled:opacity-50"
           >
             <span className="material-symbols-outlined text-sm">
               {loading ? 'progress_activity' : 'wb_sunny'}
@@ -88,11 +88,9 @@ export function MorningBriefWidget() {
       {/* Empty state */}
       {!brief && !loading && !error && (
         <div className="flex items-center gap-4 px-6 py-5">
-          <span className="material-symbols-outlined text-on-surface-variant text-2xl">
-            wb_sunny
-          </span>
+        
           <p className="text-body-sm font-body-sm text-on-surface-variant">
-            Click <strong>Brief Me</strong> to get a prioritized AI summary of your studio — fabric alerts, tailor load, and decisions you need to make today.
+            Click <strong>Brief Me</strong> to get a prioritized AI summary of your studio, fabric alerts, tailor load, and decisions you need to make today.
           </p>
         </div>
       )}
