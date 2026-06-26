@@ -1,5 +1,5 @@
 export type MessageSource = 'instagram' | 'whatsapp' | 'facebook' | 'website'
-export type MessageStatus = 'unresponded' | 'responded' | 'finalized'
+export type MessageStatus = 'unresponded' | 'responded' | 'pending_approval' | 'finalized'
 export type MessageCategory = 'enquiry' | 'negotiation' | 'complaint' | 'order_confirmation'
 
 export interface Message {
@@ -46,6 +46,7 @@ export interface TailorAssignment {
   order_id: string
   tailor_id: string
   role_description: string
+  reasoning: string | null
   approved_by_tailor: boolean
   edited_by_tailor: boolean
   assigned_at: string

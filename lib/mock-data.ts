@@ -226,6 +226,21 @@ export const mockMessages: Message[] = [
     created_at: '2026-06-19T12:25:00Z',
     cloth_type: 'Ankara Dinner Gown',
   },
+  {
+    id: 'msg-016',
+    source: 'website',
+    client_name: 'Blessing Okoro',
+    client_contact: 'blessing.okoro@gmail.com',
+    content:
+      'Order confirmation: Ankara gown, agreed price ₦55,000, pickup on the 8th of July as discussed.',
+    status: 'pending_approval',
+    category: 'order_confirmation',
+    ai_draft:
+      'Confirmed, Blessing! Your Ankara gown is locked in at ₦55,000, pickup July 8th. We will message you when it is ready.',
+    approved_at: '2026-06-25T11:40:00Z',
+    created_at: '2026-06-25T11:20:00Z',
+    cloth_type: 'Ankara Gown',
+  },
 ]
 
 export const mockTailors: Tailor[] = [
@@ -364,6 +379,19 @@ export const mockOrders: Order[] = [
     tailor_confirmed: true,
     created_at: '2026-06-19T12:45:00Z',
   },
+  {
+    id: 'ord-009',
+    message_id: 'msg-016',
+    client_name: 'Blessing Okoro',
+    cloth_type: 'Ankara Gown',
+    description: 'Ankara gown, knee length, size 12, pickup July 8th',
+    deadline: '2026-07-08',
+    order_type: 'bespoke',
+    collection_id: null,
+    status: 'confirmed',
+    tailor_confirmed: false,
+    created_at: '2026-06-25T11:40:00Z',
+  },
 ]
 
 export const mockTailorAssignments: TailorAssignment[] = [
@@ -372,6 +400,7 @@ export const mockTailorAssignments: TailorAssignment[] = [
     order_id: 'ord-001',
     tailor_id: 't-4',
     role_description: 'Final fitting adjustments and pressing',
+    reasoning: 'Assigned to Tunde Bakare — specialty match (Lace & Evening Gowns), lowest load among available tailors, deadline in 3 days.',
     approved_by_tailor: true,
     edited_by_tailor: false,
     assigned_at: '2026-06-18T10:00:00Z',
@@ -381,6 +410,7 @@ export const mockTailorAssignments: TailorAssignment[] = [
     order_id: 'ord-002',
     tailor_id: 't-1',
     role_description: 'Lead seamstress — blouse construction and gold trim finishing',
+    reasoning: 'Assigned to Ngozi Chukwu — closest available match for bridal-style construction, lowest load, deadline in 10 days.',
     approved_by_tailor: true,
     edited_by_tailor: false,
     assigned_at: '2026-06-21T09:30:00Z',
@@ -390,6 +420,7 @@ export const mockTailorAssignments: TailorAssignment[] = [
     order_id: 'ord-005',
     tailor_id: 't-1',
     role_description: 'Aso-oke weaving liaison and iro/buba assembly',
+    reasoning: 'Assigned to Ngozi Chukwu — specialty match (Bridal & Aso-Oke), lowest load, deadline in 12 days.',
     approved_by_tailor: true,
     edited_by_tailor: true,
     assigned_at: '2026-06-23T18:00:00Z',
@@ -399,6 +430,7 @@ export const mockTailorAssignments: TailorAssignment[] = [
     order_id: 'ord-004',
     tailor_id: 't-4',
     role_description: 'Lace gown pattern draft and beadwork',
+    reasoning: 'Assigned to Tunde Bakare — specialty match (Lace & Evening Gowns), lowest load, deadline in 10 days.',
     approved_by_tailor: false,
     edited_by_tailor: false,
     assigned_at: '2026-06-24T15:00:00Z',
@@ -408,6 +440,7 @@ export const mockTailorAssignments: TailorAssignment[] = [
     order_id: 'ord-006',
     tailor_id: 't-2',
     role_description: 'Agbada cutting and gold embroidery oversight',
+    reasoning: 'Assigned to Emeka Obi — specialty match (Agbada & Menswear), lowest load, deadline in 16 days.',
     approved_by_tailor: false,
     edited_by_tailor: false,
     assigned_at: '2026-06-24T18:10:00Z',

@@ -60,6 +60,7 @@ export type CreatedAssignment = {
   order_id: string
   tailor_id: string
   role_description: string | null
+  reasoning: string | null
   approved_by_tailor: boolean
   edited_by_tailor: boolean
   assigned_at: string
@@ -83,6 +84,7 @@ export async function createManualAssignment(input: {
       order_id: input.orderId,
       tailor_id: input.tailorId,
       role_description: roleDescription,
+      reasoning: 'Manually assigned by the shop.',
       approved_by_tailor: false,
       edited_by_tailor: false,
     })
@@ -105,7 +107,7 @@ export async function createManualAssignment(input: {
 }
 
 export async function confirmAutoAssignments(
-  suggestions: { orderId: string; tailorId: string; roleDescription: string }[]
+  suggestions: { orderId: string; tailorId: string; roleDescription: string; reasoning: string }[]
 ): Promise<{ data: CreatedAssignment[] | null; error: string | null }> {
   if (suggestions.length === 0) {
     return { data: null, error: 'No suggestions to apply.' }
@@ -119,6 +121,7 @@ export async function confirmAutoAssignments(
         order_id: s.orderId,
         tailor_id: s.tailorId,
         role_description: s.roleDescription,
+        reasoning: s.reasoning,
         approved_by_tailor: false,
         edited_by_tailor: false,
       }))

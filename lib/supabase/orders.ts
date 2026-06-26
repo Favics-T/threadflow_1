@@ -10,6 +10,7 @@ export type BoardOrderAssignment = {
   tailorName: string
   specialty: string | null
   roleDescription: string | null
+  reasoning: string | null
   approvedByTailor: boolean
   editedByTailor: boolean
   assignedAt: string
@@ -32,6 +33,7 @@ type OrderRow = Order & {
     id: string
     tailor_id: string
     role_description: string | null
+    reasoning: string | null
     approved_by_tailor: boolean
     edited_by_tailor: boolean
     assigned_at: string
@@ -46,6 +48,7 @@ const ORDER_SELECT = `
     id,
     tailor_id,
     role_description,
+    reasoning,
     approved_by_tailor,
     edited_by_tailor,
     assigned_at,
@@ -69,6 +72,7 @@ function normalizeOrder(row: OrderRow): BoardOrder {
             tailorName: tailor.name,
             specialty: tailor.specialty,
             roleDescription: assignmentRow.role_description,
+            reasoning: assignmentRow.reasoning,
             approvedByTailor: assignmentRow.approved_by_tailor,
             editedByTailor: assignmentRow.edited_by_tailor,
             assignedAt: assignmentRow.assigned_at,
@@ -112,6 +116,26 @@ export async function getOrderById(id: string): Promise<{ data: BoardOrder | nul
 
   if (error || !data) {
     return { data: null, error: error?.message ?? 'Order not found' }
+  }
+
+  return { data: normalizeOrder(data as unknown as OrderRow), error: null }
+}
+
+export async function getOrderByMessageId(messageId: string): Promise<{ data: BoardOrder | null; error: string | null }> {
+  const supabase = createClient()
+
+  const { data, error } = await supabase
+    .from('orders')
+    .select(ORDER_SELECT)
+    .eq('message_id', messageId)
+    .maybeSingle()
+
+  if (error) {
+    return { data: null, error: error.message }
+  }
+
+  if (!data) {
+    return { data: null, error: null }
   }
 
   return { data: normalizeOrder(data as unknown as OrderRow), error: null }
@@ -177,6 +201,7 @@ export function getMockOrders(): BoardOrder[] {
               tailorName: tailor.name,
               specialty: tailor.specialty,
               roleDescription: assignmentRow.role_description,
+              reasoning: assignmentRow.reasoning,
               approvedByTailor: assignmentRow.approved_by_tailor,
               editedByTailor: assignmentRow.edited_by_tailor,
               assignedAt: assignmentRow.assigned_at,

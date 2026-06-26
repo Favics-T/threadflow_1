@@ -125,6 +125,11 @@ export function OrderDetailDrawer({
                         {order.assignment.roleDescription}
                       </p>
                     )}
+                    {order.assignment.reasoning && (
+                      <p className="text-body-sm font-body-sm text-on-surface-variant italic mt-2">
+                        Why this tailor: {order.assignment.reasoning}
+                      </p>
+                    )}
                     <span
                       className={`inline-block mt-2 text-label-caps font-label-caps px-2 py-0.5 ${
                         order.assignment.approvedByTailor

@@ -7,7 +7,7 @@ import { Toast } from '@/components/ui/Toast'
 import { formatRelativeTime } from '@/lib/format-time'
 import type { Collection, Message, MessageSource, MessageStatus } from '@/types/threadflow'
 
-type RowStatus = 'no_response' | 'pending' | 'done'
+type RowStatus = 'no_response' | 'pending' | 'awaiting_approval' | 'done'
 
 interface InboxRow {
   id: string
@@ -29,12 +29,14 @@ const PLATFORM_CONFIG: Record<MessageSource, { icon: string; color: string }> = 
 const STATUS_CONFIG: Record<RowStatus, { label: string; className: string }> = {
   no_response: { label: 'No Response', className: 'bg-warning/10 text-warning' },
   pending: { label: 'Pending', className: 'bg-blue-100 text-blue-700' },
+  awaiting_approval: { label: 'Waiting Approval', className: 'bg-tertiary-fixed text-on-tertiary-fixed-variant' },
   done: { label: 'Done', className: 'bg-success/10 text-success' },
 }
 
 const ROW_STATUS_BY_MESSAGE_STATUS: Record<MessageStatus, RowStatus> = {
   unresponded: 'no_response',
   responded: 'pending',
+  pending_approval: 'awaiting_approval',
   finalized: 'done',
 }
 
@@ -44,6 +46,7 @@ const FILTERS: { key: 'all' | RowStatus; label: string }[] = [
   { key: 'all', label: 'All' },
   { key: 'no_response', label: 'No Response' },
   { key: 'pending', label: 'Pending' },
+  { key: 'awaiting_approval', label: 'Waiting Approval' },
   { key: 'done', label: 'Done' },
 ]
 
@@ -106,6 +109,7 @@ export function InboxClient({
     all: allRows.length,
     no_response: allRows.filter((r) => r.status === 'no_response').length,
     pending: allRows.filter((r) => r.status === 'pending').length,
+    awaiting_approval: allRows.filter((r) => r.status === 'awaiting_approval').length,
     done: allRows.filter((r) => r.status === 'done').length,
   }
 

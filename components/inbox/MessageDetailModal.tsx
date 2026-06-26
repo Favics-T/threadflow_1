@@ -1,10 +1,12 @@
 'use client'
 
-import { useState, useTransition } from 'react'
+import { useEffect, useState, useTransition } from 'react'
 import { SourceBadge } from '@/components/ui/SourceBadge'
 import { CategoryTag } from './CategoryTag'
-import { approveAndSend } from '@/app/inbox/actions'
+import { approveAndSend, approveOrder, confirmSuggestedAssignment, getOrderForMessage } from '@/app/inbox/actions'
 import type { Message } from '@/types/threadflow'
+import type { BoardOrder } from '@/lib/supabase/orders'
+import type { AssignmentSuggestion } from '@/lib/assignment-engine'
 
 export function MessageDetailModal({
   message,
@@ -24,6 +26,19 @@ export function MessageDetailModal({
   const [isGenerating, setIsGenerating] = useState(false)
   const [genError, setGenError] = useState<string | null>(null)
   const [isPending, startTransition] = useTransition()
+
+  const [order, setOrder] = useState<BoardOrder | null>(null)
+  const [suggestion, setSuggestion] = useState<AssignmentSuggestion | null>(null)
+  const [isApproving, startApproving] = useTransition()
+  const [isAssigning, startAssigning] = useTransition()
+
+  useEffect(() => {
+    if (message.status !== 'pending_approval' && message.status !== 'finalized') return
+
+    getOrderForMessage(message.id).then(({ order }) => {
+      setOrder(order)
+    })
+  }, [message.id, message.status])
 
   async function handleGenerateDraft() {
     setIsGenerating(true)
@@ -59,6 +74,58 @@ export function MessageDetailModal({
       })
       setIsEditing(false)
       showToast(`Reply sent to ${message.client_name}`)
+    })
+  }
+
+  function handleApproveOrder() {
+    startApproving(async () => {
+      const result = await approveOrder(message.id)
+      if (!result.ok) {
+        showToast(result.error ?? 'Something went wrong.', 'error')
+        return
+      }
+      setOrder((prev) => (prev ? { ...prev, tailor_confirmed: true } : prev))
+      setSuggestion(result.suggestion ?? null)
+      onApproved({ id: message.id, status: 'finalized' })
+      showToast(`Order confirmed for ${message.client_name}`)
+    })
+  }
+
+  function handleConfirmAssignment() {
+    if (!order || !suggestion) return
+
+    startAssigning(async () => {
+      const result = await confirmSuggestedAssignment({
+        orderId: order.id,
+        tailorId: suggestion.tailorId,
+        roleDescription: `Primary tailor for ${suggestion.clothType}`,
+        reasoning: suggestion.reasoning,
+      })
+      if (result.error) {
+        showToast(result.error, 'error')
+        return
+      }
+      setOrder((prev) =>
+        prev
+          ? {
+              ...prev,
+              status: 'in_production',
+              assignment: {
+                assignmentId: '',
+                tailorId: suggestion.tailorId,
+                tailorName: suggestion.tailorName,
+                specialty: null,
+                roleDescription: `Primary tailor for ${suggestion.clothType}`,
+                reasoning: suggestion.reasoning,
+                approvedByTailor: false,
+                editedByTailor: false,
+                assignedAt: new Date().toISOString(),
+              },
+            }
+          : prev
+      )
+      setSuggestion(null)
+      showToast(`${suggestion.tailorName} assigned to this order.`)
     })
   }
 
@@ -164,10 +231,82 @@ export function MessageDetailModal({
             </div>
           </div>
 
+          {message.status === 'pending_approval' && (
+            <div className="border border-outline-variant">
+              <div className="flex items-center gap-2 px-4 py-3 border-b border-outline-variant bg-surface-container-low">
+                <span className="material-symbols-outlined text-sm text-warning">pending</span>
+                <span className="text-label-caps font-label-caps text-on-surface-variant">
+                  Order Drafted — Waiting Tailor Approval
+                </span>
+              </div>
+              <div className="px-4 py-4 flex flex-col gap-3">
+                {order && (
+                  <p className="text-body-sm font-body-sm text-on-surface-variant">
+                    {order.cloth_type} — due {new Date(order.deadline).toLocaleDateString('en-US', { month: 'short', day: 'numeric' })}
+                  </p>
+                )}
+                <p className="text-body-sm font-body-sm text-on-surface-variant">
+                  This was submitted from the conversation but is not a real order until the tailor confirms it.
+                </p>
+                <button
+                  onClick={handleApproveOrder}
+                  disabled={isApproving || !order}
+                  className="w-full flex items-center justify-center gap-2 bg-primary text-on-primary py-3 text-label-caps font-label-caps tracking-widest hover:opacity-90 transition-opacity disabled:opacity-50"
+                >
+                  <span className="material-symbols-outlined text-sm">task_alt</span>
+                  {isApproving ? 'APPROVING…' : 'APPROVE AS ORDER'}
+                </button>
+              </div>
+            </div>
+          )}
+
           {message.status === 'finalized' && (
-            <div className="flex items-center gap-2 bg-tertiary-fixed/40 px-4 py-3">
-              <span className="material-symbols-outlined text-sm text-tertiary">check_circle</span>
-              <span className="text-label-caps font-label-caps text-on-surface-variant">Converted to order</span>
+            <div className="flex flex-col gap-3">
+              <div className="flex items-center gap-2 bg-tertiary-fixed/40 px-4 py-3">
+                <span className="material-symbols-outlined text-sm text-tertiary">check_circle</span>
+                <span className="text-label-caps font-label-caps text-on-surface-variant">Converted to order</span>
+              </div>
+
+              {suggestion && (
+                <div className="border border-primary/40 bg-primary/5 px-4 py-4 flex flex-col gap-3">
+                  <p className="text-body-sm font-body-sm font-semibold text-primary">
+                    Suggested tailor: {suggestion.tailorName}
+                  </p>
+                  <p className="text-body-sm font-body-sm text-on-surface-variant">{suggestion.reasoning}</p>
+                  <button
+                    onClick={handleConfirmAssignment}
+                    disabled={isAssigning}
+                    className="w-full flex items-center justify-center gap-2 bg-primary text-on-primary py-2.5 text-label-caps font-label-caps tracking-widest hover:opacity-90 transition-opacity disabled:opacity-50"
+                  >
+                    <span className="material-symbols-outlined text-sm">person_add</span>
+                    {isAssigning ? 'ASSIGNING…' : 'CONFIRM ASSIGNMENT'}
+                  </button>
+                </div>
+              )}
+
+              {!suggestion && order?.assignment && (
+                <div className="border border-outline-variant px-4 py-4 flex flex-col gap-1">
+                  <p className="text-body-sm font-body-sm font-semibold text-primary">
+                    Assigned to {order.assignment.tailorName}
+                  </p>
+                  {order.assignment.reasoning && (
+                    <p className="text-body-sm font-body-sm text-on-surface-variant italic">
+                      {order.assignment.reasoning}
+                    </p>
+                  )}
+                </div>
+              )}
+
+              {!suggestion && order && !order.assignment && (
+                <div className="flex items-center justify-between gap-3 border border-outline-variant px-4 py-3">
+                  <span className="text-label-caps font-label-caps px-2 py-0.5 bg-surface-container text-on-surface-variant">
+                    UNASSIGNED
+                  </span>
+                  <a href="/tailors" className="text-label-caps font-label-caps text-primary hover:underline">
+                    ASSIGN MANUALLY
+                  </a>
+                </div>
+              )}
             </div>
           )}
         </div>

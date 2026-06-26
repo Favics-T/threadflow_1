@@ -45,6 +45,7 @@ export function TailorsDashboardClient({
       tailorName: tailor.name,
       specialty: tailor.specialty,
       roleDescription: assignment.role_description,
+      reasoning: assignment.reasoning,
       approvedByTailor: assignment.approved_by_tailor,
       editedByTailor: assignment.edited_by_tailor,
       assignedAt: assignment.assigned_at,

@@ -27,6 +27,7 @@ export function AutoAssignPreviewModal({
           orderId: s.orderId,
           tailorId: s.tailorId,
           roleDescription: `Primary tailor for ${s.clothType}`,
+          reasoning: s.reasoning,
         }))
       )
       if (result.error || !result.data) {
