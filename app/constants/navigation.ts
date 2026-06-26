@@ -28,7 +28,7 @@ export const navItems: NavItem[] = [
     icon: ShoppingCart,
   },
   {
-    href: "/inventory",
+    href: "/collections",
     label: "Inventory",
     icon: ShelvingUnit,
   },

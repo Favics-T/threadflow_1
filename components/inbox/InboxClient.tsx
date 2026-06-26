@@ -1,27 +1,25 @@
 'use client'
 
 import { useMemo, useState } from 'react'
-import {
-  mockNoResponseMessages,
-  mockPendingConversations,
-  mockDoneConversations,
-} from '@/lib/mock/conversations'
-import type { ConversationPlatform } from '@/lib/types/conversations'
-import type { Collection, Message } from '@/types/threadflow'
+import { MessageDetailModal } from './MessageDetailModal'
+import { OrderFinalizationModal } from './OrderFinalizationModal'
+import { Toast } from '@/components/ui/Toast'
+import { formatRelativeTime } from '@/lib/format-time'
+import type { Collection, Message, MessageSource, MessageStatus } from '@/types/threadflow'
 
 type RowStatus = 'no_response' | 'pending' | 'done'
 
 interface InboxRow {
   id: string
   clientName: string
-  platform: ConversationPlatform
+  platform: MessageSource
   message: string
   time: string
   status: RowStatus
   highPriority: boolean
 }
 
-const PLATFORM_CONFIG: Record<ConversationPlatform, { icon: string; color: string }> = {
+const PLATFORM_CONFIG: Record<MessageSource, { icon: string; color: string }> = {
   instagram: { icon: 'photo_camera', color: '#E1306C' },
   whatsapp: { icon: 'chat', color: '#25D366' },
   facebook: { icon: 'thumb_up', color: '#1877F2' },
@@ -32,6 +30,12 @@ const STATUS_CONFIG: Record<RowStatus, { label: string; className: string }> = {
   no_response: { label: 'No Response', className: 'bg-warning/10 text-warning' },
   pending: { label: 'Pending', className: 'bg-blue-100 text-blue-700' },
   done: { label: 'Done', className: 'bg-success/10 text-success' },
+}
+
+const ROW_STATUS_BY_MESSAGE_STATUS: Record<MessageStatus, RowStatus> = {
+  unresponded: 'no_response',
+  responded: 'pending',
+  finalized: 'done',
 }
 
 const HIGH_PRIORITY_CLASSNAME = 'bg-urgent/10 text-urgent'
@@ -56,50 +60,47 @@ function formatDateRange(): string {
   return `${fmt(start)} – ${fmt(end)}, ${end.getFullYear()}`
 }
 
-function buildRows(): InboxRow[] {
-  const noResponseRows: InboxRow[] = mockNoResponseMessages.map((m) => ({
-    id: m.id,
-    clientName: m.clientName,
-    platform: m.platform,
-    message: m.message,
-    time: m.timestamp,
-    status: 'no_response',
-    highPriority: m.priority === 'high',
-  }))
-
-  const pendingRows: InboxRow[] = mockPendingConversations.map((c) => ({
-    id: c.id,
-    clientName: c.clientName,
-    platform: c.platform,
-    message: c.summary,
-    time: c.lastMessageAt,
-    status: 'pending',
-    highPriority: false,
-  }))
-
-  const doneRows: InboxRow[] = mockDoneConversations.map((c) => ({
-    id: c.id,
-    clientName: c.clientName,
-    platform: c.platform,
-    message: c.garmentDescription,
-    time: c.concludedAt,
-    status: 'done',
-    highPriority: false,
-  }))
-
-  return [...noResponseRows, ...pendingRows, ...doneRows]
+function buildRows(messages: Message[]): InboxRow[] {
+  return messages
+    .slice()
+    .sort((a, b) => new Date(b.created_at).getTime() - new Date(a.created_at).getTime())
+    .map((m) => ({
+      id: m.id,
+      clientName: m.client_name,
+      platform: m.source,
+      message: m.content,
+      time: formatRelativeTime(m.created_at),
+      status: ROW_STATUS_BY_MESSAGE_STATUS[m.status],
+      highPriority: m.category === 'complaint',
+    }))
 }
 
 export function InboxClient({
-  initialMessages, // eslint-disable-line @typescript-eslint/no-unused-vars
-  collections, // eslint-disable-line @typescript-eslint/no-unused-vars
+  initialMessages,
+  collections,
+  usingMockData,
 }: {
   initialMessages: Message[]
   collections: Collection[]
+  usingMockData: boolean
 }) {
-  const allRows = useMemo(() => buildRows(), [])
+  const [messages, setMessages] = useState<Message[]>(initialMessages)
   const [activeFilter, setActiveFilter] = useState<'all' | RowStatus>('all')
   const [search, setSearch] = useState('')
+  const [selectedId, setSelectedId] = useState<string | null>(null)
+  const [finalizingId, setFinalizingId] = useState<string | null>(null)
+  const [toast, setToast] = useState<{ message: string; variant: 'success' | 'error' } | null>(null)
+
+  function showToast(message: string, variant: 'success' | 'error' = 'success') {
+    setToast({ message, variant })
+    setTimeout(() => setToast(null), 3500)
+  }
+
+  function patchMessage(patch: Partial<Message> & { id: string }) {
+    setMessages((prev) => prev.map((m) => (m.id === patch.id ? { ...m, ...patch } : m)))
+  }
+
+  const allRows = useMemo(() => buildRows(messages), [messages])
 
   const counts: Record<'all' | RowStatus, number> = {
     all: allRows.length,
@@ -116,6 +117,9 @@ export function InboxClient({
       (r) => !query || r.clientName.toLowerCase().includes(query) || r.message.toLowerCase().includes(query)
     )
 
+  const selectedMessage = messages.find((m) => m.id === selectedId) ?? null
+  const finalizingMessage = messages.find((m) => m.id === finalizingId) ?? null
+
   return (
     <main className="px-10 py-10 pb-16">
       <header className="mb-8">
@@ -124,6 +128,15 @@ export function InboxClient({
           Last 7 days · {formatDateRange()}
         </p>
       </header>
+
+      {usingMockData && (
+        <div className="mb-6 flex items-center gap-2 border border-outline-variant bg-surface-container-low px-4 py-3">
+          <span className="material-symbols-outlined text-sm text-on-surface-variant">info</span>
+          <p className="text-body-sm font-body-sm text-on-surface-variant">
+            Showing demo data — connect the messages table in Supabase to see live conversations.
+          </p>
+        </div>
+      )}
 
       <div className="flex items-center justify-between gap-4 flex-wrap mb-6">
         <div className="flex items-center gap-2 flex-wrap">
@@ -211,11 +224,12 @@ export function InboxClient({
                 return (
                   <tr
                     key={row.id}
-                    className={`transition-colors hover:bg-surface-container/50 ${
+                    onClick={() => setSelectedId(row.id)}
+                    className={`cursor-pointer transition-colors hover:bg-surface-container/50 ${
                       i < visibleRows.length - 1 ? 'border-b border-outline-variant' : ''
                     }`}
                   >
-                    <td className="px-4 py-3">
+                    <td className="px-4 py-3" onClick={(e) => e.stopPropagation()}>
                       <input type="checkbox" className="h-4 w-4" aria-label={`Select ${row.clientName}`} />
                     </td>
                     <td className="px-4 py-3">
@@ -257,6 +271,34 @@ export function InboxClient({
           </tbody>
         </table>
       </div>
+
+      {selectedMessage && (
+        <MessageDetailModal
+          key={selectedMessage.id}
+          message={selectedMessage}
+          onClose={() => setSelectedId(null)}
+          onApproved={patchMessage}
+          onRequestFinalize={() => setFinalizingId(selectedMessage.id)}
+          showToast={showToast}
+        />
+      )}
+
+      {finalizingMessage && (
+        <OrderFinalizationModal
+          key={finalizingMessage.id}
+          message={finalizingMessage}
+          collections={collections}
+          onClose={() => setFinalizingId(null)}
+          onFinalized={(messageId) => {
+            patchMessage({ id: messageId, status: 'finalized' })
+            setFinalizingId(null)
+            setSelectedId(null)
+          }}
+          showToast={showToast}
+        />
+      )}
+
+      {toast && <Toast message={toast.message} variant={toast.variant} />}
     </main>
   )
 }

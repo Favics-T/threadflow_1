@@ -13,9 +13,9 @@ type Answers = {
 }
 
 const INITIAL_ANSWERS: Answers = {
-  businessType: 'Fashion house',
+  businessType: '',
   teamSize: '',
-  orderSources: ['WhatsApp', 'Instagram DMs'],
+  orderSources: [],
   goals: [],
   studioName: '',
 }
