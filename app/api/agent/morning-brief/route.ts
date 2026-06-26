@@ -1,4 +1,3 @@
-import { anthropic } from '@ai-sdk/anthropic'
 import { generateText, tool, stepCountIs } from 'ai'
 import { NextResponse } from 'next/server'
 import { z } from 'zod'
@@ -24,7 +23,7 @@ export async function GET(req: Request) {
   }
 
   const result = await generateText({
-    model: anthropic('gemini-2.0-flash'),
+    model: google('gemini-2.0-flash'),
     system: `You are ThreadFlow, an AI operations agent for a fashion house studio.
 Your job right now is to generate the Morning Brief — a prioritized daily summary
 for the studio manager.
