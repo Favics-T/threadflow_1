@@ -142,30 +142,34 @@ export async function confirmSuggestedAssignment(input: {
   tailorId: string
   roleDescription: string
   reasoning: string
-}) {
+}): Promise<{ data: { id: string } | null; error: string | null }> {
   const supabase = createClient()
 
-  const { error: assignmentError } = await supabase.from('tailor_assignments').insert({
-    order_id: input.orderId,
-    tailor_id: input.tailorId,
-    role_description: input.roleDescription,
-    reasoning: input.reasoning,
-    approved_by_tailor: false,
-    edited_by_tailor: false,
-  })
+  const { data, error: assignmentError } = await supabase
+    .from('tailor_assignments')
+    .insert({
+      order_id: input.orderId,
+      tailor_id: input.tailorId,
+      role_description: input.roleDescription,
+      reasoning: input.reasoning,
+      approved_by_tailor: false,
+      edited_by_tailor: false,
+    })
+    .select('id')
+    .single()
 
   if (assignmentError) {
-    return { error: assignmentError.message }
+    return { data: null, error: assignmentError.message }
   }
 
   const { error: statusError } = await updateOrderStatus(input.orderId, 'in_production')
 
   if (statusError) {
-    return { error: statusError }
+    return { data: null, error: statusError }
   }
 
   revalidatePath('/inbox')
   revalidatePath('/orders')
   revalidatePath('/tailors')
-  return { ok: true }
+  return { data: data as { id: string }, error: null }
 }

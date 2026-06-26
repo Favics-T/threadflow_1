@@ -114,6 +114,44 @@ export function assignTailorsToOrders(orders: Order[], tailors: Tailor[]): Assig
 }
 
 /**
+ * Same matching logic as assignTailorsToOrders, but for a single order against
+ * live tailor load — used where the owner wants to see the agent suggest one
+ * tailor on demand (e.g. the Orders board) rather than batch-suggesting everything.
+ */
+export function suggestTailorForOrder(order: Order, tailors: Tailor[]): AssignmentSuggestion | null {
+  const available = tailors.filter((t) => t.is_available)
+  if (available.length === 0) return null
+
+  const matched = available.filter((t) => specialtyMatches(t.specialty, order))
+  const pool = matched.length > 0 ? matched : available
+
+  const chosen = pool.reduce((best, candidate) => (candidate.current_load < best.current_load ? candidate : best))
+
+  const daysUntilDeadline = daysUntil(order.deadline)
+  const isUrgent = daysUntilDeadline < URGENT_THRESHOLD_DAYS
+  const loadAfterAssignment = chosen.current_load + 1
+
+  return {
+    orderId: order.id,
+    clientName: order.client_name,
+    clothType: order.cloth_type,
+    deadline: order.deadline,
+    daysUntilDeadline,
+    isUrgent,
+    tailorId: chosen.id,
+    tailorName: chosen.name,
+    specialtyMatch: matched.length > 0,
+    reasoning: buildReasoning({
+      tailorName: chosen.name,
+      isSpecialtyMatch: matched.length > 0,
+      loadAfterAssignment,
+      daysUntilDeadline,
+      isUrgent,
+    }),
+  }
+}
+
+/**
  * The 3-day buffer rule: any order due within 3 days that hasn't reached
  * "ready" (or "delivered") yet is at risk of missing its deadline.
  */
